@@ -9,15 +9,15 @@ import { getInitials } from '../lib/utils';
 import '../styles/layout.css';
 
 const NAV_ITEMS = [
-  { id: 'overview',   label: 'Overview',        path: '/',          icon: DashIcon   },
-  { id: 'inventory',  label: 'Inventory',       path: '/inventory', icon: BoxIcon    },
-  { id: 'sales',      label: 'Sales',           path: '/sales',     icon: SalesIcon  },
-  { id: 'transfer',   label: 'Stock Transfer',  path: '/transfer',  icon: SwapIcon   },
-  { id: 'reports',    label: 'Reports',         path: '/reports',   icon: ChartIcon  },
+  { id: 'overview',   label: 'Overview',        path: '/admin/',          icon: DashIcon   },
+  { id: 'inventory',  label: 'Inventory',       path: '/admin/inventory', icon: BoxIcon    },
+  { id: 'sales',      label: 'Sales',           path: '/admin/sales',     icon: SalesIcon  },
+  { id: 'transfer',   label: 'Stock Transfer',  path: '/admin/transfer',  icon: SwapIcon   },
+  { id: 'reports',    label: 'Reports',         path: '/admin/reports',   icon: ChartIcon  },
 ];
 
 const ADMIN_NAV = [
-  { id: 'users', label: 'Users & Branches', path: '/users', icon: TeamIcon },
+  { id: 'users', label: 'Users & Branches', path: '/admin/users', icon: TeamIcon },
 ];
 
 const PAGE_META = {
