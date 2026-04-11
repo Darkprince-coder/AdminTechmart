@@ -1,16 +1,16 @@
 /* src/branch/styles/layout-scoped.css — ALL SELECTORS SCOPED TO .branch-theme */
+/* Complete scoping of Ezekii Branch app layout */
 
 /* ============================================================
    APP SHELL
    Mobile-first: topbar + bottom tab nav
    Tablet/Desktop: shifts to sidebar layout
    ============================================================ */
-
 .branch-theme .app-shell {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  height: 100dvh; /* dynamic viewport for mobile browsers */
+  height: 100dvh;
   overflow: hidden;
   background: var(--bg-base);
 }
@@ -68,7 +68,6 @@
   gap: 8px;
 }
 
-/* Dark mode toggle */
 .branch-theme .theme-toggle {
   width: 36px; height: 36px;
   border-radius: 50%;
@@ -90,7 +89,6 @@
   width: 16px; height: 16px; 
 }
 
-/* User avatar button */
 .branch-theme .user-avatar-btn {
   width: 34px; height: 34px;
   border-radius: 50%;
@@ -111,43 +109,17 @@
 }
 
 /* ============================================================
-   CONTENT AREA
-   ============================================================ */
-.branch-theme .app-content {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-.branch-theme .app-body {
-  flex: 1;
-  padding: 16px;
-}
-
-.branch-theme .app-body::before {
-  content: '';
-  position: fixed;
-  top: 0; right: 0;
-  width: 50vw; height: 50vh;
-  background: radial-gradient(ellipse at top right,
-    rgba(26, 107, 74, .04) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ============================================================
-   BOTTOM NAVIGATION (mobile tabs)
+   BOTTOM TAB NAV (mobile default)
    ============================================================ */
 .branch-theme .bottom-nav {
-  height: 56px;
+  height: var(--nav-h);
   background: var(--bg-card);
   border-top: 1px solid var(--border-soft);
   display: flex;
-  gap: 4px;
-  padding: 0 12px;
+  align-items: stretch;
   flex-shrink: 0;
-  z-index: 50;
+  z-index: 60;
+  box-shadow: 0 -2px 12px rgba(0,0,0,.06);
 }
 
 .branch-theme .nav-tab {
@@ -159,46 +131,367 @@
   gap: 3px;
   border: none;
   background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
+  color: var(--text-tertiary);
   font-size: 10px;
-  font-family: var(--font);
   font-weight: 500;
-  transition: all .15s;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: color .14s;
+  padding: 0;
   position: relative;
 }
 
-.branch-theme .nav-tab:hover {
-  color: var(--text-primary);
+.branch-theme .nav-tab svg { 
+  width: 20px; height: 20px; flex-shrink: 0; 
+}
+
+.branch-theme .nav-tab span { 
+  font-size: 10px; line-height: 1; 
 }
 
 .branch-theme .nav-tab.active {
   color: var(--brand);
+}
+
+.branch-theme .nav-tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 20%; right: 20%;
+  height: 2.5px;
+  background: var(--brand);
+  border-radius: 0 0 3px 3px;
+}
+
+/* ============================================================
+   PAGE BODY
+   ============================================================ */
+.branch-theme .page-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 16px;
+  background: var(--bg-base);
+}
+
+/* ============================================================
+   MAIN AREA
+   ============================================================ */
+.branch-theme .main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ============================================================
+   SIDEBAR (desktop)
+   ============================================================ */
+.branch-theme .sidebar {
+  display: none;
+  flex-direction: column;
+  width: 220px;
+  flex-shrink: 0;
+  height: 100vh;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+
+.branch-theme .sidebar-header {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.branch-theme .sidebar-brand-icon {
+  width: 36px; height: 36px;
+  background: var(--brand-light);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.branch-theme .sidebar-brand-icon svg {
+  width: 18px; height: 18px;
+  stroke: var(--brand); fill: none; stroke-width: 2;
+}
+
+.branch-theme .sidebar-shop-name {
+  font-size: 13.5px; font-weight: 700;
+  color: var(--text-primary); letter-spacing: -.01em;
+}
+
+.branch-theme .sidebar-shop-sub {
+  font-size: 11px; color: var(--text-secondary); margin-top: 1px;
+}
+
+.branch-theme .sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.branch-theme .sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
+  transition: all .13s;
+}
+
+.branch-theme .sidebar-nav-item svg { 
+  width: 16px; height: 16px; flex-shrink: 0; opacity: .7; 
+}
+
+.branch-theme .sidebar-nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.branch-theme .sidebar-nav-item.active {
+  background: var(--brand-light);
+  color: var(--brand);
   font-weight: 600;
 }
 
-.branch-theme .nav-tab::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  width: 32px;
-  height: 3px;
+.branch-theme .sidebar-nav-item.active svg { 
+  opacity: 1; 
+}
+
+.branch-theme .sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.branch-theme .sidebar-user-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  border-radius: var(--r-sm);
+}
+
+.branch-theme .sidebar-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.branch-theme .sidebar-user-name { 
+  font-size: 12.5px; font-weight: 600; color: var(--text-primary); 
+}
+
+.branch-theme .sidebar-user-email { 
+  font-size: 11px; color: var(--text-secondary); 
+}
+
+.branch-theme .sidebar-theme-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+}
+
+.branch-theme .sidebar-theme-label {
+  font-size: 12px; color: var(--text-secondary);
+}
+
+.branch-theme .sidebar-signout {
+  width: 100%;
+  padding: 8px;
   background: transparent;
-  border-radius: 1.5px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .14s;
+  text-align: center;
 }
 
-.branch-theme .nav-tab.active::after {
-  background: var(--brand);
+.branch-theme .sidebar-signout:hover {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: rgba(155,44,44,.3);
 }
 
-.branch-theme .nav-tab svg {
-  width: 20px;
-  height: 20px;
+/* ============================================================
+   DESKTOP TOPBAR
+   ============================================================ */
+.branch-theme .desktop-topbar {
+  display: none;
+  height: var(--topbar-h);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-soft);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  flex-shrink: 0;
 }
 
-/* Hidden on desktop */
-@media (min-width: 768px) {
+.branch-theme .dt-title { 
+  font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -.02em; 
+}
+
+.branch-theme .dt-sub { 
+  font-size: 12px; color: var(--text-secondary); margin-top: 2px; 
+}
+
+/* ============================================================
+   TOAST NOTIFICATIONS
+   ============================================================ */
+.branch-theme .toast-container {
+  position: fixed;
+  bottom: calc(var(--nav-h) + 12px);
+  right: 14px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+  max-width: 320px;
+}
+
+.branch-theme .toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 11px 14px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: slideInRight .22s ease forwards;
+  pointer-events: all;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+
+.branch-theme .toast-icon { 
+  flex-shrink: 0; margin-top: 1px; 
+}
+
+.branch-theme .toast-msg { 
+  flex: 1; line-height: 1.45; 
+}
+
+.branch-theme .toast-success { 
+  border-left: 3px solid var(--brand); 
+}
+
+.branch-theme .toast-success .toast-icon { 
+  color: var(--brand); 
+}
+
+.branch-theme .toast-error { 
+  border-left: 3px solid var(--red); 
+}
+
+.branch-theme .toast-error .toast-icon { 
+  color: var(--red); 
+}
+
+.branch-theme .toast-warning { 
+  border-left: 3px solid var(--amber); 
+}
+
+.branch-theme .toast-warning .toast-icon { 
+  color: var(--amber); 
+}
+
+.branch-theme .toast-info { 
+  border-left: 3px solid var(--blue); 
+}
+
+.branch-theme .toast-info .toast-icon { 
+  color: var(--blue); 
+}
+
+/* ============================================================
+   PAGE HEADER (inside page-body)
+   ============================================================ */
+.branch-theme .page-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -.025em;
+  margin-bottom: 2px;
+}
+
+.branch-theme .page-sub {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  margin-bottom: 18px;
+}
+
+/* ============================================================
+   DESKTOP LAYOUT (sidebar)
+   ============================================================ */
+@media (min-width: 860px) {
+  .branch-theme .app-shell {
+    flex-direction: row;
+  }
+
+  .branch-theme .topbar {
+    display: none;
+  }
+
   .branch-theme .bottom-nav {
     display: none;
+  }
+
+  .branch-theme .sidebar {
+    display: flex !important;
+  }
+
+  .branch-theme .main-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .branch-theme .desktop-topbar {
+    display: flex !important;
+  }
+
+  .branch-theme .page-body { 
+    padding: 20px; 
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
