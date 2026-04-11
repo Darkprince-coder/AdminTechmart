@@ -78,6 +78,7 @@ export function AuthProvider({ children }) {
 
   const isAdmin   = profile?.role === 'admin';
   const isManager = profile?.role === 'manager';
+  const shopId    = profile?.shop_id ?? null;
 
   // loading = true only while session state is genuinely unknown
   // Once session is known (null or object), and profile fetch is done, loading = false
@@ -90,6 +91,7 @@ export function AuthProvider({ children }) {
       profileError,
       isAdmin,
       isManager,
+      shopId,
       loading,
       signIn,
       signOut,

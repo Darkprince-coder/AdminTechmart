@@ -1,0 +1,232 @@
+/* src/styles/inventory.css — Ezekii Branch App */
+
+/* ---- ADD/EDIT FORM ---- */
+.inv-form-card {
+  border: 1.5px solid var(--brand-light);
+}
+
+.inv-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.inv-cat-select-wrap {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.inv-cat-select-wrap .form-select,
+.inv-cat-select-wrap .form-input {
+  flex: 1;
+}
+
+.inv-margin-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--brand-light);
+  color: var(--brand);
+  border: 1px solid rgba(26,107,74,.15);
+  border-radius: var(--r-sm);
+  padding: 9px 13px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.inv-margin-warn {
+  background: var(--amber-light);
+  color: var(--amber);
+  border-color: rgba(176,107,16,.2);
+}
+
+.inv-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* ---- TOOLBAR ---- */
+.inv-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inv-cat-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.inv-chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all .13s;
+  white-space: nowrap;
+  line-height: 1;
+}
+.inv-chip:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.inv-chip.active {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-color: rgba(26,107,74,.25);
+}
+
+/* ---- TABLE HEADER ---- */
+.inv-count {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 8px;
+}
+
+/* ---- STOCK CELL (table) ---- */
+.inv-stock-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- TABLE ROW ACTIONS ---- */
+.inv-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: flex-end;
+}
+
+/* ---- LOADING / ERROR ---- */
+.inv-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+.inv-fetch-error {
+  padding: 10px 0;
+  font-size: 13px;
+  color: var(--red);
+}
+.inv-retry-link {
+  background: none;
+  border: none;
+  color: var(--brand);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 13px;
+  font-family: var(--font);
+  padding: 0;
+}
+
+/* ============================================================
+   MOBILE PRODUCT CARDS
+   ============================================================ */
+.inv-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inv-product-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .15s;
+}
+.inv-card-low { border-left: 3px solid var(--amber); }
+.inv-card-oos { border-left: 3px solid var(--red); }
+
+.inv-product-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.inv-product-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.inv-product-qty {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 44px;
+}
+
+.inv-product-prices {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.inv-price-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inv-price-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.inv-product-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.inv-restock-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ---- Mobile = cards, Desktop = table ---- */
+.inv-desktop-table { display: none; }
+
+@media (min-width: 640px) {
+  .inv-mobile-list   { display: none; }
+  .inv-desktop-table { display: block; }
+}
+
+/* ---- Responsive toolbar ---- */
+@media (max-width: 560px) {
+  .inv-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .inv-product-prices {
+    grid-template-columns: 1fr 1fr;
+  }
+}
