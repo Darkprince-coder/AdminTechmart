@@ -45,7 +45,7 @@
 .branch-theme .rep-period-btn:hover { color: var(--text-primary); }
 .branch-theme .rep-period-btn.active {
   background: var(--bg-card);
-  color: var(--teal);
+  color: var(--brand);
   font-weight: 700;
   box-shadow: var(--shadow-xs);
 }

@@ -1,0 +1,252 @@
+/* src/branch/styles/sales-scoped.css — ALL SELECTORS SCOPED TO .branch-theme */
+
+/* ---- MAIN LAYOUT ---- */
+.branch-theme .sales-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 700px) {
+  .branch-theme .sales-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- RECORD FORM ---- */
+.branch-theme .sales-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Product info strip */
+.branch-theme .sales-product-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+}
+
+.branch-theme .sales-strip-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.branch-theme .sales-strip-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+/* Sale total preview */
+.branch-theme .sales-preview {
+  background: var(--brand-light);
+  border: 1px solid rgba(26,107,74,.15);
+  border-radius: var(--r-md);
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.branch-theme .sales-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.branch-theme .sales-preview-row strong {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.branch-theme .sales-preview-row.profit strong { 
+  color: var(--brand); 
+}
+
+.branch-theme .sales-preview-row.loss {
+  color: var(--red);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* ---- TODAY SUMMARY CARD ---- */
+.branch-theme .sales-summary-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.branch-theme .sales-stat-block {
+  background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.branch-theme .sales-stat-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  letter-spacing: -.02em;
+}
+
+/* Recent transactions in summary */
+.branch-theme .sales-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.branch-theme .sales-recent-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border-soft);
+  border-radius: var(--r-xs);
+  transition: background .1s;
+}
+
+.branch-theme .sales-recent-row:last-child { 
+  border-bottom: none; 
+}
+
+.branch-theme .sales-recent-row:hover { 
+  background: var(--bg-hover); 
+}
+
+.branch-theme .sales-recent-info { 
+  flex: 1; 
+  min-width: 0; 
+}
+
+.branch-theme .sales-recent-name { 
+  font-size: 13px; 
+  font-weight: 600; 
+  color: var(--text-primary); 
+}
+
+.branch-theme .sales-recent-meta { 
+  font-size: 11px; 
+  color: var(--text-secondary); 
+  margin-top: 2px; 
+}
+
+.branch-theme .sales-recent-amounts { 
+  text-align: right; 
+  flex-shrink: 0; 
+}
+
+.branch-theme .sales-recent-total { 
+  font-size: 13px; 
+  font-weight: 700; 
+  color: var(--text-primary); 
+  font-family: var(--font-mono); 
+}
+
+.branch-theme .sales-recent-profit { 
+  font-size: 11px; 
+  color: var(--brand); 
+  margin-top: 2px; 
+}
+
+/* ---- SALES HISTORY ---- */
+.branch-theme .sales-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 20px;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* ---- MOBILE SALE CARDS ---- */
+.branch-theme .sales-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.branch-theme .sale-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.branch-theme .sale-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.branch-theme .sale-card-product {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.branch-theme .sale-card-meta {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.branch-theme .sale-card-total {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.branch-theme .sale-card-profit {
+  font-size: 12px;
+  color: var(--brand);
+  font-weight: 600;
+  margin-top: 2px;
+  text-align: right;
+}
+
+.branch-theme .sale-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.branch-theme .sale-card-time {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+/* Mobile = cards, Desktop = table */
+.branch-theme .sales-desktop-table { 
+  display: none; 
+}
+
+@media (min-width: 640px) {
+  .branch-theme .sales-mobile-list    { 
+    display: none; 
+  }
+  .branch-theme .sales-desktop-table  { 
+    display: block; 
+  }
+}

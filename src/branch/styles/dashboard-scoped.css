@@ -1,0 +1,146 @@
+/* src/branch/styles/dashboard-scoped.css — ALL SELECTORS SCOPED TO .branch-theme */
+
+.branch-theme .dash-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 50vh;
+  color: var(--text-secondary);
+  font-size: 13.5px;
+}
+
+/* ---- STOCK ALERT CARD (parity with TechMart admin overview) ---- */
+.branch-theme .dash-stock-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.branch-theme .dash-stock-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.branch-theme .dash-stock-alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 3px rgba(155, 44, 44, 0.2);
+  flex-shrink: 0;
+  animation: dash-stock-dot-pulse 2.2s ease infinite;
+}
+
+@keyframes dash-stock-dot-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.08); }
+}
+
+.branch-theme .dash-stock-card-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.branch-theme .dash-stock-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.branch-theme .dash-stock-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  transition: background 0.12s;
+}
+
+.branch-theme .dash-stock-item:hover {
+  background: var(--bg-secondary);
+}
+
+.branch-theme .dash-stock-item.oos {
+  background: var(--red-light);
+}
+
+.branch-theme .dash-stock-item.low {
+  background: var(--amber-light);
+}
+
+.branch-theme .dash-stock-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.branch-theme .dash-stock-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+
+.branch-theme .dash-stock-item.oos .dash-stock-badge {
+  background: rgba(155, 44, 44, 0.18);
+  color: var(--red);
+}
+
+.branch-theme .dash-stock-item.low .dash-stock-badge {
+  background: rgba(176, 107, 16, 0.18);
+  color: var(--amber);
+}
+
+.branch-theme .dash-stock-item-text {
+  min-width: 0;
+}
+
+.branch-theme .dash-stock-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.branch-theme .dash-stock-qty {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+  font-weight: 500;
+}
+
+.branch-theme .dash-stock-item-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.branch-theme .dash-stock-pct {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.branch-theme .dash-stock-status {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  font-weight: 500;
+}

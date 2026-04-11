@@ -7,7 +7,8 @@ import InventoryPage from './pages/InventoryPage';
 import SalesPage from './pages/SalesPage';
 import ReportsPage from './pages/ReportsPage';
 import './styles/globals.css';
-import './styles/layout.css';
+import './styles/layout-scoped.css';
+import './styles/components-scoped.css';
 
 export default function BranchApp() {
   const [activePage, setActivePage] = useState('dashboard');

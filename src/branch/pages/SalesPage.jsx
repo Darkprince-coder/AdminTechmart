@@ -11,7 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 import { fmtKES, fmtDate, fmtTime, isToday } from '../lib/utils';
-import '../styles/sales.css';
+import '../styles/sales-scoped.css';
 
 const EMPTY_FORM = {
   product_id:    '',

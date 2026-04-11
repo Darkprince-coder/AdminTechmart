@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 import { fmtKES, stockStatus, stockPct, margin } from '../lib/utils';
-import '../styles/inventory.css';
+import '../styles/inventory-scoped.css';
 
 // Ezekii Electronics Isinet — tailored category list
 const PRESET_CATEGORIES = [

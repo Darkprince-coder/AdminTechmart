@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { fmtKES, fmtTime, isToday } from '../lib/utils';
-import '../styles/dashboard.css';
+import '../styles/dashboard-scoped.css';
 
 export default function DashboardPage({ onNavigate }) {
   const { shopId } = useAuth();

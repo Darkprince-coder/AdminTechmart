@@ -1,0 +1,223 @@
+/* src/branch/styles/components.css — scoped under .branch-theme */
+/* BRANCH-SPECIFIC COMPONENT STYLES - ALL SCOPED TO PREVENT CONFLICTS */
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.branch-theme .card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.branch-theme .card-sm { 
+  padding: 14px 16px; 
+}
+
+.branch-theme .card-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -.01em;
+}
+
+.branch-theme .card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.branch-theme .card-header-gap { 
+  gap: 10px; 
+}
+
+/* ============================================================
+   METRIC CARD
+   ============================================================ */
+.branch-theme .metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-md);
+  padding: 16px;
+  box-shadow: var(--shadow-xs);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.branch-theme .metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+}
+
+.branch-theme .metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+  font-family: var(--font-mono);
+  letter-spacing: -.02em;
+}
+
+.branch-theme .metric-sub {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+
+.branch-theme .metric-sub.up     { 
+  color: var(--brand); 
+}
+
+.branch-theme .metric-sub.warn   { 
+  color: var(--amber); 
+}
+
+.branch-theme .metric-sub.danger { 
+  color: var(--red); 
+}
+
+/* Accent top borders */
+.branch-theme .metric-brand  { 
+  border-top: 3px solid var(--brand); 
+}
+
+.branch-theme .metric-amber  { 
+  border-top: 3px solid var(--amber); 
+}
+
+.branch-theme .metric-red    { 
+  border-top: 3px solid var(--red); 
+}
+
+.branch-theme .metric-blue   { 
+  border-top: 3px solid var(--blue); 
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.branch-theme .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  letter-spacing: .01em;
+}
+
+.branch-theme .badge-ok      { 
+  background: var(--green-light); color: var(--green); 
+}
+
+.branch-theme .badge-warn    { 
+  background: var(--amber-light); color: var(--amber); 
+}
+
+.branch-theme .badge-danger  { 
+  background: var(--red-light); color: var(--red); 
+}
+
+.branch-theme .badge-info    { 
+  background: var(--blue-light); color: var(--blue); 
+}
+
+.branch-theme .badge-brand   { 
+  background: var(--brand-light); color: var(--brand); 
+}
+
+.branch-theme .badge-neutral { 
+  background: var(--bg-secondary); color: var(--text-secondary); 
+}
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.branch-theme .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  font-family: var(--font);
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Button variants */
+.branch-theme .btn-primary {
+  background: var(--brand);
+  color: white;
+  box-shadow: 0 2px 6px rgba(26, 107, 74, .35);
+}
+
+.branch-theme .btn-primary:hover {
+  background: var(--brand-mid);
+  transform: translateY(-1px);
+}
+
+.branch-theme .btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+}
+
+.branch-theme .btn-secondary:hover {
+  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.branch-theme .btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+.branch-theme .btn-ghost:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.branch-theme .btn-danger {
+  background: rgba(155, 44, 44, .1);
+  color: var(--red);
+  border: 1px solid rgba(155, 44, 44, .25);
+}
+
+.branch-theme .btn-danger:hover {
+  background: rgba(155, 44, 44, .2);
+  border-color: rgba(155, 44, 44, .4);
+}
+
+/* Button sizes */
+.branch-theme .btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.branch-theme .btn-lg {
+  padding: 12px 24px;
+  font-size: 14px;
+}
+
+.branch-theme .btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

@@ -6,7 +6,7 @@ import { ShopProvider }              from './context/ShopContext';
 import { ToastProvider }             from './context/ToastContext';
 import { ThemeProvider }             from './context/ThemeContext';
 import { ErrorBoundary, NetworkGuard } from './components/ErrorBoundary';
-import AppLayout         from './components/AppLayout';
+import AdminLayout       from './components/AdminLayout';
 import LoginPage         from './pages/LoginPage';
 import RoleSelectPage    from './pages/RoleSelectPage';
 import OverviewPage      from './pages/OverviewPage';
@@ -77,7 +77,7 @@ function AdminRoutes() {
   return (
     <ShopProvider>
       <ToastProvider>
-        <AppLayout>
+        <AdminLayout>
           <Routes>
             <Route path="/"          element={<OverviewPage />} />
             <Route path="/inventory" element={<InventoryPage />} />
@@ -87,7 +87,7 @@ function AdminRoutes() {
             <Route path="/users"     element={<UserManagementPage />} />
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
-        </AppLayout>
+        </AdminLayout>
       </ToastProvider>
     </ShopProvider>
   );
