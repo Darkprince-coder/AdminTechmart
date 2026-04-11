@@ -8,17 +8,20 @@ import { ThemeProvider }             from './context/ThemeContext';
 import { ErrorBoundary, NetworkGuard } from './components/ErrorBoundary';
 import AppLayout         from './components/AppLayout';
 import LoginPage         from './pages/LoginPage';
+import RoleSelectPage    from './pages/RoleSelectPage';
 import OverviewPage      from './pages/OverviewPage';
 import InventoryPage     from './pages/InventoryPage';
 import SalesPage         from './pages/SalesPage';
 import TransferPage      from './pages/TransferPage';
 import ReportsPage       from './pages/ReportsPage';
 import UserManagementPage from './pages/UserManagementPage';
+import BranchApp         from './branch/BranchApp';
 
 import './styles/globals.css';
 import './styles/components.css';
 import './styles/layout.css';
 import './styles/error.css';
+import './styles/role-select.css';
 
 function LoadingScreen() {
   return (
@@ -29,8 +32,8 @@ function LoadingScreen() {
   );
 }
 
-function ProtectedRoute({ children }) {
-  const { session, profile, profileError, isAdmin, loading, signOut } = useAuth();
+function ProtectedRoute({ children, allowedRoles }) {
+  const { session, profile, profileError, loading, signOut } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!session) return <Navigate to="/login" replace />;
   if (profileError) return (
@@ -64,15 +67,9 @@ function ProtectedRoute({ children }) {
       </div>
     </div>
   );
-  if (profile.role === 'manager') return (
-    <div className="error-screen">
-      <div className="error-card">
-        <h2 className="error-title">Wrong portal</h2>
-        <p className="error-desc">This is the admin panel. Branch managers should use the Ezekii branch app.</p>
-        <button className="error-btn" onClick={signOut}>Sign out</button>
-      </div>
-    </div>
-  );
+  if (allowedRoles && !allowedRoles.includes(profile.role)) {
+    return <Navigate to={profile?.role === 'manager' ? '/branch' : '/admin'} replace />;
+  }
   return children;
 }
 
@@ -99,7 +96,9 @@ function AdminRoutes() {
 function AuthGate({ children }) {
   const { session, profile, loading } = useAuth();
   if (loading) return <LoadingScreen />;
-  if (session && profile?.role === 'admin') return <Navigate to="/" replace />;
+  if (session && profile) {
+    return <Navigate to={profile.role === 'manager' ? '/branch' : '/admin'} replace />;
+  }
   return children;
 }
 
@@ -111,8 +110,11 @@ export default function App() {
           <BrowserRouter>
             <AuthProvider>
               <Routes>
+                <Route path="/" element={<RoleSelectPage />} />
                 <Route path="/login" element={<AuthGate><LoginPage /></AuthGate>} />
-                <Route path="/*" element={<ProtectedRoute><AdminRoutes /></ProtectedRoute>} />
+                <Route path="/admin/*" element={<ProtectedRoute allowedRoles={['admin']}><AdminRoutes /></ProtectedRoute>} />
+                <Route path="/branch/*" element={<ProtectedRoute allowedRoles={['manager']}><BranchApp /></ProtectedRoute>} />
+                <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </AuthProvider>
           </BrowserRouter>
