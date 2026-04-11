@@ -13,6 +13,24 @@ import {
 } from 'recharts';
 import '../styles/overview.css';
 
+function OverviewSkeleton() {
+  return (
+    <div className="ov-page-skeleton fade-in" aria-busy="true">
+      <span className="sr-only">Loading network overview</span>
+      <div className="ov-sk-metrics" aria-hidden>
+        {[1, 2, 3, 4].map(k => (
+          <div key={k} className="ov-sk-card" />
+        ))}
+      </div>
+      <div className="ov-sk-row" aria-hidden>
+        <div className="ov-sk-chart" />
+        <div className="ov-sk-side" />
+      </div>
+      <div className="ov-sk-section" aria-hidden />
+    </div>
+  );
+}
+
 export default function OverviewPage() {
   const navigate = useNavigate();
   const toast = useToast();
@@ -53,9 +71,7 @@ export default function OverviewPage() {
 
   useEffect(() => { fetchStats(); }, [fetchStats]);
 
-  if (loading) return (
-    <div className="ov-loading"><div className="spinner"/><span>Loading dashboard…</span></div>
-  );
+  if (loading) return <OverviewSkeleton />;
 
   if (loadError || !stats) return (
     <div className="ov-loading" style={{ flexDirection: 'column', gap: 14 }}>
@@ -124,6 +140,8 @@ export default function OverviewPage() {
   return (
     <div className="fade-in">
 
+      <div className="section-label">At a glance</div>
+
       {/* ── METRICS ── */}
       <div className="grid-4 mb-md stagger">
         <MetricCard
@@ -153,8 +171,8 @@ export default function OverviewPage() {
         />
       </div>
 
-      {/* ── REVENUE CHART + STOCK ALERT CARD ── */}
-      <div className="ov-chart-row mb-md">
+      {/* ── REVENUE CHART + STOCK ALERT CARD (alerts only when items need attention) ── */}
+      <div className={`ov-chart-row mb-md${alertCount === 0 ? ' ov-chart-row-single' : ''}`}>
         {/* Area chart */}
         <div className="card ov-chart-card">
           <div className="card-header">
@@ -210,8 +228,7 @@ export default function OverviewPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Smart stock alert card */}
-        {alertCount > 0 ? (
+        {alertCount > 0 && (
           <div className="card ov-alert-card">
             <div className="card-header">
               <div>
@@ -269,23 +286,6 @@ export default function OverviewPage() {
                 </svg>
               </button>
             )}
-          </div>
-        ) : (
-          <div className="card ov-alert-card ov-all-good">
-            <div style={{ textAlign:'center', padding:'20px 0' }}>
-              <div className="ov-good-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12"/>
-                </svg>
-              </div>
-              <div style={{ fontWeight:700, fontSize:14, color:'var(--text-primary)', marginBottom:4 }}>
-                All stock levels healthy
-              </div>
-              <div style={{ fontSize:12.5, color:'var(--text-tertiary)' }}>
-                No products are running low right now
-              </div>
-            </div>
           </div>
         )}
       </div>

@@ -486,3 +486,23 @@
   font-size: 13px;
   line-height: 1.6;
 }
+
+/* Primary actions — comfortable touch on phones */
+@media (max-width: 640px) {
+  .branch-theme .btn-primary:not(.btn-xs):not(.btn-sm),
+  .branch-theme .btn-secondary:not(.btn-xs):not(.btn-sm),
+  .branch-theme .btn-danger:not(.btn-xs):not(.btn-sm),
+  .branch-theme .btn-ghost:not(.btn-xs):not(.btn-sm) {
+    min-height: 48px;
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+  .branch-theme .btn-full {
+    min-height: 50px;
+  }
+  .branch-theme .btn-xs {
+    min-height: 40px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}

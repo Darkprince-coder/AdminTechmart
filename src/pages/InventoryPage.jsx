@@ -206,7 +206,7 @@ export default function InventoryPage() {
         action: 'product_delete',
         entityType: 'product',
         entityId: p.id,
-        metadata: { name: p.name, shop_id: p.shop_id, category: p.category },
+        metadata: { portal: 'admin', name: p.name, shop_id: p.shop_id, category: p.category },
       });
       toastRef.current.success(`${p.name} deleted`);
       fetchProducts();

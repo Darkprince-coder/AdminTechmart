@@ -10,6 +10,88 @@
   font-size: 13.5px;
 }
 
+/* ---- Dashboard first-paint skeleton ---- */
+@keyframes dash-sk-shimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -120% 0; }
+}
+.branch-theme .dash-page-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 8px;
+}
+.branch-theme .dash-sk-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+@media (min-width: 640px) {
+  .branch-theme .dash-sk-metrics {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.branch-theme .dash-sk-card {
+  height: 96px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(
+    110deg,
+    var(--bg-secondary) 0%,
+    var(--bg-hover) 45%,
+    var(--bg-secondary) 80%
+  );
+  background-size: 220% 100%;
+  animation: dash-sk-shimmer 1.3s ease-in-out infinite;
+}
+.branch-theme .dash-sk-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 720px) {
+  .branch-theme .dash-sk-row {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+}
+.branch-theme .dash-sk-block {
+  min-height: 140px;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-soft);
+  background: linear-gradient(
+    110deg,
+    var(--bg-secondary) 0%,
+    var(--bg-hover) 45%,
+    var(--bg-secondary) 80%
+  );
+  background-size: 220% 100%;
+  animation: dash-sk-shimmer 1.35s ease-in-out infinite;
+}
+.branch-theme .dash-sk-block--tall {
+  min-height: 200px;
+}
+.branch-theme .dash-sk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.branch-theme .dash-sk-line {
+  height: 52px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-secondary);
+  opacity: 0.9;
+}
+
+.branch-theme .dash-section-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
 /* ---- STOCK ALERT CARD (parity with TechMart admin overview) ---- */
 .branch-theme .dash-stock-card {
   display: flex;

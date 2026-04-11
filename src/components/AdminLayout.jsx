@@ -8,6 +8,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAuditNavBadge } from '../hooks/useAuditNavBadge';
 import { getInitials } from '../lib/utils';
 import '../styles/admin-layout.css';
 
@@ -41,6 +42,9 @@ export default function AdminLayout({ children }) {
   const navigate    = useNavigate();
   const location    = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isAuditRoute = location.pathname === '/admin/audit';
+  const { unseenCount, badgePulse } = useAuditNavBadge({ isOnAuditRoute: isAuditRoute });
+  const auditShowNumber = unseenCount >= 10;
 
   const meta    = PAGE_META[location.pathname] || { title: 'TechMart', sub: '' };
   const email   = session?.user?.email || '';
@@ -97,11 +101,14 @@ export default function AdminLayout({ children }) {
             {NAV_ITEMS.map(Item => (
               <button
                 key={Item.id}
+                type="button"
                 className={`nav-item ${location.pathname === Item.path ? 'active' : ''}`}
                 onClick={() => { navigate(Item.path); close(); }}
               >
-                <Item.icon />
-                {Item.label}
+                <span className="nav-item-main">
+                  <Item.icon />
+                  <span className="nav-item-text">{Item.label}</span>
+                </span>
               </button>
             ))}
 
@@ -109,11 +116,29 @@ export default function AdminLayout({ children }) {
             {ADMIN_NAV.map(Item => (
               <button
                 key={Item.id}
+                type="button"
                 className={`nav-item ${location.pathname === Item.path ? 'active' : ''}`}
                 onClick={() => { navigate(Item.path); close(); }}
               >
-                <Item.icon />
-                {Item.label}
+                <span className="nav-item-main">
+                  <Item.icon />
+                  <span className="nav-item-text">{Item.label}</span>
+                </span>
+                {Item.id === 'audit' && unseenCount > 0 ? (
+                  auditShowNumber ? (
+                    <span
+                      className={`nav-audit-badge${unseenCount > 99 ? ' nav-audit-badge-wide' : ''}${badgePulse ? ' nav-audit-badge--ping' : ''}`}
+                      aria-label={`${unseenCount} new audit log entries`}
+                    >
+                      {unseenCount > 99 ? '99+' : unseenCount}
+                    </span>
+                  ) : (
+                    <span
+                      className={`nav-audit-dot${badgePulse ? ' nav-audit-dot--ping' : ''}`}
+                      aria-label={`${unseenCount} new audit log entries`}
+                    />
+                  )
+                ) : null}
               </button>
             ))}
           </nav>
@@ -134,7 +159,7 @@ export default function AdminLayout({ children }) {
               <ThemeSwitch isDark={isDark} onToggle={toggleTheme} />
             </div>
 
-            <button className="signout-btn" onClick={signOut}>Sign out</button>
+            <button type="button" className="signout-btn" onClick={signOut}>Sign out</button>
           </div>
         </aside>
 
@@ -143,7 +168,7 @@ export default function AdminLayout({ children }) {
           {/* Topbar */}
           <header className="topbar">
             <div className="topbar-left">
-              <button className="hamburger" onClick={() => setSidebarOpen(true)}>
+              <button type="button" className="hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" strokeWidth="2">
                   <line x1="3" y1="6"  x2="21" y2="6"/>
@@ -157,7 +182,21 @@ export default function AdminLayout({ children }) {
               </div>
             </div>
             <div className="topbar-right">
-              <button className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
+              {unseenCount > 0 && !isAuditRoute && (
+                <button
+                  type="button"
+                  className={`topbar-audit-chip${badgePulse ? ' topbar-audit-chip--ping' : ''}`}
+                  onClick={() => navigate('/admin/audit')}
+                  title={`${unseenCount} new audit log entries — open Audit log`}
+                >
+                  <span className={`topbar-audit-ping${auditShowNumber ? '' : ' topbar-audit-ping--solo'}`} aria-hidden />
+                  Audit
+                  {auditShowNumber ? (
+                    <span className="topbar-audit-count">{unseenCount > 99 ? '99+' : unseenCount}</span>
+                  ) : null}
+                </button>
+              )}
+              <button type="button" className="theme-toggle" onClick={toggleTheme} title="Toggle theme">
                 {isDark ? <SunIcon /> : <MoonIcon />}
               </button>
               <span className="badge badge-teal" style={{ fontSize: 11.5 }}>Admin</span>

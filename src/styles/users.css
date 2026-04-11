@@ -2,23 +2,6 @@
 
 .um-section { margin-bottom: 16px; }
 
-/* ---- INFO BANNER ---- */
-.um-how-it-works {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  background: var(--blue-light, #E6F1FB);
-  border: 1px solid rgba(24,95,165,.15);
-  border-radius: var(--radius-md, 10px);
-  padding: 12px 14px;
-  margin-bottom: 16px;
-  font-size: 13px;
-  color: var(--blue, #185FA5);
-  line-height: 1.55;
-}
-.um-how-it-works svg { flex-shrink: 0; margin-top: 1px; }
-.um-how-it-works strong { font-weight: 600; }
-
 /* ---- INLINE FORMS ---- */
 .um-inline-form {
   background: var(--color-background-secondary, #F0F2F5);

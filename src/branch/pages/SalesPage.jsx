@@ -10,6 +10,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
+import { insertAuditLog } from '../../lib/auditLog';
 import { fmtKES, fmtDate, fmtTime, isToday } from '../lib/utils';
 import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/sales-scoped.css';
@@ -189,6 +190,18 @@ const handleDeleteSale = async () => {
     // FIX: immediately remove from local state — no waiting for re-fetch
     setSales(prev => prev.filter(s => s.id !== deleteConfirm.id));
     toastRef.current.success('Sale deleted and stock restored');
+    insertAuditLog({
+      action: 'sale_delete',
+      entityType: 'sale',
+      entityId: deleteConfirm.id,
+      metadata: {
+        portal: 'branch',
+        shop_id: shopId,
+        product_name: deleteConfirm.product_name,
+        quantity: deleteConfirm.quantity,
+        total_amount: deleteConfirm.total_amount,
+      },
+    });
     // Refresh products in background so stock shows correctly
     fetchProducts();
   }
@@ -279,7 +292,7 @@ const handleDeleteSale = async () => {
               <div className="form-group">
                 <label className="form-label">Product *</label>
                 <select name="product_id" className="form-select"
-                  value={form.product_id} onChange={handleChange}>
+                  value={form.product_id} onChange={handleChange} disabled={saving}>
                   <option value="">— Select product —</option>
                   {products.map(p => (
                     <option key={p.id} value={p.id}>
@@ -315,7 +328,7 @@ const handleDeleteSale = async () => {
                   <input name="quantity" type="number" min="1"
                     max={selectedProduct?.quantity}
                     className="form-input"
-                    value={form.quantity} onChange={handleChange} />
+                    value={form.quantity} onChange={handleChange} disabled={saving} />
                   {selectedProduct && +form.quantity > selectedProduct.quantity && (
                     <span className="form-error-msg">Only {selectedProduct.quantity} in stock</span>
                   )}
@@ -324,7 +337,7 @@ const handleDeleteSale = async () => {
                   <label className="form-label">Sale price (KSh) *</label>
                   <input name="unit_price" type="number" min="0"
                     className="form-input"
-                    value={form.unit_price} onChange={handleChange} />
+                    value={form.unit_price} onChange={handleChange} disabled={saving} />
                   {note && (
                     <span className="form-hint"
                       style={{ color: note.type === 'up' ? 'var(--brand)' : 'var(--amber)' }}>
@@ -356,14 +369,18 @@ const handleDeleteSale = async () => {
                 <label className="form-label">Customer name</label>
                 <input name="customer_name" type="text" className="form-input"
                   placeholder="Leave blank for Walk-in"
-                  value={form.customer_name} onChange={handleChange} />
+                  value={form.customer_name} onChange={handleChange} disabled={saving} />
               </div>
 
-              <button className="btn btn-primary btn-full" onClick={handleRecord}
+              <button type="button" className="btn btn-primary btn-full" onClick={handleRecord}
                 disabled={saving || !form.product_id}>
-                {saving
-                  ? <><span className="spinner" style={{ width:15, height:15, borderWidth:2 }}/> Recording…</>
-                  : 'Record sale'}
+                {saving ? (
+                  <>
+                    <span className="spinner spinner-sm" /> Processing…
+                  </>
+                ) : (
+                  'Record sale'
+                )}
               </button>
             </div>
           )}

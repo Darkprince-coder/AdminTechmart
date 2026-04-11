@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
+import { insertAuditLog } from '../../lib/auditLog';
 import { fmtKES, stockStatus, stockPct, margin } from '../lib/utils';
 import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/inventory-scoped.css';
@@ -179,6 +180,17 @@ export default function InventoryPage() {
     if (error) {
       toastRef.current.error('Delete failed: ' + error.message);
     } else {
+      insertAuditLog({
+        action: 'product_delete',
+        entityType: 'product',
+        entityId: deleteConfirm.id,
+        metadata: {
+          portal: 'branch',
+          shop_id: shopId,
+          name: deleteConfirm.name,
+          category: deleteConfirm.category,
+        },
+      });
       toastRef.current.success(`${deleteConfirm.name} removed from inventory`);
       fetchProducts();
     }

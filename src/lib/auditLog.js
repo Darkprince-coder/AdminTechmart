@@ -13,7 +13,7 @@ import { supabase } from './supabase';
  * @param {Record<string, unknown>} [opts.metadata]
  */
 export async function insertAuditLog({ action, entityType, entityId, metadata }) {
-/*   try {
+  try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) return;
 
@@ -30,5 +30,5 @@ export async function insertAuditLog({ action, entityType, entityId, metadata })
     }
   } catch (e) {
     console.warn('[audit_logs] insert exception', e);
-  } */
+  }
 }

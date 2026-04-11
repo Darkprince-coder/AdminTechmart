@@ -9,6 +9,28 @@ import { fmtKES, fmtTime, isToday } from '../lib/utils';
 import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/dashboard-scoped.css';
 
+function DashboardSkeleton() {
+  return (
+    <div className="dash-page-skeleton" aria-busy="true">
+      <span className="sr-only">Loading branch dashboard</span>
+      <div className="dash-sk-metrics" aria-hidden>
+        {[1, 2, 3, 4].map(k => (
+          <div key={k} className="dash-sk-card" />
+        ))}
+      </div>
+      <div className="dash-sk-row" aria-hidden>
+        <div className="dash-sk-block dash-sk-block--tall" />
+        <div className="dash-sk-block" />
+      </div>
+      <div className="dash-sk-list" aria-hidden>
+        {[1, 2, 3].map(k => (
+          <div key={k} className="dash-sk-line" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage({ onNavigate }) {
   const { shopId } = useAuth();
   const [data,      setData]      = useState(null);
@@ -52,12 +74,7 @@ export default function DashboardPage({ onNavigate }) {
 
   if (!shopId) return <NoShopAssigned />;
 
-  if (loading) return (
-    <div className="dash-loading">
-      <div className="spinner"/>
-      <span>Loading dashboard…</span>
-    </div>
-  );
+  if (loading) return <DashboardSkeleton />;
 
   if (loadError || !data) return (
     <div className="dash-loading" style={{ flexDirection: 'column', gap: 14 }}>
@@ -99,6 +116,8 @@ export default function DashboardPage({ onNavigate }) {
 
   return (
     <div className="fade-up">
+
+      <div className="dash-section-label">At a glance</div>
 
       {/* ---- METRICS ---- */}
       <div className="grid-4 mb-md">

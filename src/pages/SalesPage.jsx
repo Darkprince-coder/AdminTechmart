@@ -189,6 +189,7 @@ export default function SalesPage() {
         entityType: 'sale',
         entityId: deleteConfirm.id,
         metadata: {
+          portal: 'admin',
           shop_id: deleteConfirm.shop_id,
           product_name: deleteConfirm.product_name,
           quantity: deleteConfirm.quantity,
@@ -248,7 +249,7 @@ export default function SalesPage() {
           <div className="sales-form">
             <div className="form-group">
               <label className="form-label">Branch *</label>
-              <select name="shop_id" className="form-select" value={form.shop_id} onChange={handleChange}>
+              <select name="shop_id" className="form-select" value={form.shop_id} onChange={handleChange} disabled={saving}>
                 <option value="">— Select branch —</option>
                 {shops.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
               </select>
@@ -256,7 +257,7 @@ export default function SalesPage() {
             <div className="form-group">
               <label className="form-label">Product *</label>
               <select name="product_id" className="form-select" value={form.product_id}
-                onChange={handleChange} disabled={!form.shop_id || products.length === 0}>
+                onChange={handleChange} disabled={saving || !form.shop_id || products.length === 0}>
                 {products.length === 0
                   ? <option value="">No products in stock</option>
                   : products.map(p => (
@@ -281,12 +282,12 @@ export default function SalesPage() {
               <div className="form-group">
                 <label className="form-label">Quantity *</label>
                 <input name="quantity" type="number" min="1" className="form-input"
-                  value={form.quantity} onChange={handleChange} />
+                  value={form.quantity} onChange={handleChange} disabled={saving} />
               </div>
               <div className="form-group">
                 <label className="form-label">Unit price (KSh) *</label>
                 <input name="unit_price" type="number" min="0" className="form-input"
-                  value={form.unit_price} onChange={handleChange} />
+                  value={form.unit_price} onChange={handleChange} disabled={saving} />
               </div>
             </div>
 
@@ -306,11 +307,18 @@ export default function SalesPage() {
             <div className="form-group">
               <label className="form-label">Customer name</label>
               <input name="customer_name" type="text" className="form-input"
-                placeholder="Walk-in" value={form.customer_name} onChange={handleChange} />
+                placeholder="Walk-in" value={form.customer_name} onChange={handleChange} disabled={saving} />
             </div>
-            <button type="button" className="btn btn-primary" onClick={handleRecord} disabled={saving}
+            <button type="button" className="btn btn-primary" onClick={handleRecord}
+              disabled={saving || !form.shop_id || !form.product_id}
               style={{ width: '100%', justifyContent: 'center' }}>
-              {saving ? 'Recording…' : 'Record sale'}
+              {saving ? (
+                <>
+                  <span className="spinner spinner-sm" /> Processing…
+                </>
+              ) : (
+                'Record sale'
+              )}
             </button>
           </div>
         </div>

@@ -161,22 +161,6 @@ export default function UserManagementPage() {
   return (
     <div className="fade-in">
 
-      {/* ---- INFO BANNER ---- */}
-      <div className="um-how-it-works">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" strokeWidth="2">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="8"  x2="12" y2="12"/>
-          <line x1="12" y1="16" x2="12.01" y2="16"/>
-        </svg>
-        <div>
-          <strong>To add a new manager:</strong> Create their account in{' '}
-          <strong>Supabase Dashboard → Authentication → Users</strong>.
-          Their profile will appear here automatically. Then click <strong>Edit</strong> to
-          set their name, assign a branch, and confirm their role.
-        </div>
-      </div>
-
       {/* ---- BRANCHES ---- */}
       <div className="card um-section">
         <div className="card-header">
