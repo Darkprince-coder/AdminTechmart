@@ -87,19 +87,14 @@ export default function AuditLogsPage() {
 
   return (
     <div className="fade-in">
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 24 }}>Audit Logs</h1>
-          <p style={{ margin: '8px 0 0 0', color: 'var(--text-tertiary)' }}>
-            Recent admin actions recorded in Supabase.
-          </p>
-        </div>
-
-        <div style={{ minWidth: 260, width: '100%', maxWidth: 360 }}>
+      <div className="mb-md" style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
+        <div className="search-bar" style={{ flex: 1, maxWidth: 400 }}>
+          <svg className="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
           <input
             type="search"
-            className="form-input"
-            placeholder="Search action, entity, user, metadata"
+            placeholder="Search action, entity, user, metadata…"
             value={search}
             onChange={e => setSearch(e.target.value)}
           />

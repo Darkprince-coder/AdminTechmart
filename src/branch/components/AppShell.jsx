@@ -69,9 +69,9 @@ export default function AppShell({ activePage, onNavigate, children }) {
   return (
     <div className="app-shell">
 
-      {/* ===== SIDEBAR (desktop) ===== */}
+      {/* ===== SIDEBAR (desktop) — layout matches TechMart admin ===== */}
       <aside className="sidebar">
-        <div className="sidebar-header">
+        <div className="sidebar-brand">
           <div className="sidebar-brand-icon">
             <svg viewBox="0 0 24 24">
               <rect x="2" y="3" width="20" height="14" rx="2"/>
@@ -80,16 +80,18 @@ export default function AppShell({ activePage, onNavigate, children }) {
             </svg>
           </div>
           <div>
-            <div className="sidebar-shop-name">Ezekii Electronics</div>
-            <div className="sidebar-shop-sub">Isinet Branch</div>
+            <div className="sidebar-brand-name">Ezekii Electronics</div>
+            <div className="sidebar-brand-sub">Isinet Branch</div>
           </div>
         </div>
 
         <nav className="sidebar-nav">
+          <div className="nav-section-label">Branch</div>
           {NAV_ITEMS.map(item => (
             <button
               key={item.id}
-              className={`sidebar-nav-item ${activePage === item.id ? 'active' : ''}`}
+              type="button"
+              className={`nav-item ${activePage === item.id ? 'active' : ''}`}
               onClick={() => onNavigate(item.id)}
             >
               {item.icon}
@@ -99,13 +101,13 @@ export default function AppShell({ activePage, onNavigate, children }) {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user-row">
-            <div className="sidebar-avatar">{getInitials(email)}</div>
+          <div className="user-row">
+            <div className="user-avatar">{getInitials(email)}</div>
             <div>
-              <div className="sidebar-user-name">
+              <div className="user-name">
                 {profile?.full_name || email.split('@')[0]}
               </div>
-              <div className="sidebar-user-email">
+              <div className="user-role">
                 {profile?.role === 'admin' ? 'Administrator' : 'Branch Manager'}
               </div>
             </div>
@@ -118,7 +120,7 @@ export default function AppShell({ activePage, onNavigate, children }) {
             <ThemeToggleSwitch isDark={isDark} onToggle={toggleTheme} />
           </div>
 
-          <button className="sidebar-signout" onClick={() => setConfirmSignOut(true)}>
+          <button type="button" className="signout-btn" onClick={() => setConfirmSignOut(true)}>
             Sign out
           </button>
         </div>
@@ -239,31 +241,37 @@ function MoonIcon() {
   );
 }
 
-/* ---- Toggle switch for sidebar ---- */
+/* Toggle switch — matches AdminLayout ThemeSwitch */
 function ThemeToggleSwitch({ isDark, onToggle }) {
   return (
     <button
+      type="button"
       onClick={onToggle}
       style={{
-        width: 40, height: 22,
+        width: 40,
+        height: 22,
         borderRadius: 11,
         border: 'none',
-        background: isDark ? 'var(--brand)' : 'var(--border)',
         cursor: 'pointer',
+        background: isDark ? '#10B981' : 'rgba(148,163,184,.25)',
         position: 'relative',
         transition: 'background .2s',
         flexShrink: 0,
       }}
     >
-      <span style={{
-        position: 'absolute',
-        top: 3, left: isDark ? 21 : 3,
-        width: 16, height: 16,
-        borderRadius: '50%',
-        background: '#fff',
-        transition: 'left .2s',
-        boxShadow: '0 1px 3px rgba(0,0,0,.3)',
-      }} />
+      <span
+        style={{
+          position: 'absolute',
+          top: 3,
+          left: isDark ? 21 : 3,
+          width: 16,
+          height: 16,
+          borderRadius: '50%',
+          background: '#fff',
+          transition: 'left .2s cubic-bezier(.4,0,.2,1)',
+          boxShadow: '0 1px 4px rgba(0,0,0,.3)',
+        }}
+      />
     </button>
   );
 }

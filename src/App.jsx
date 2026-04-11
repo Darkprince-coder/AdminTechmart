@@ -1,5 +1,3 @@
-// src/App.jsx  (ADMIN PROJECT — drop-in replacement, adds ThemeProvider)
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth }     from './context/AuthContext';
 import { ShopProvider }              from './context/ShopContext';
@@ -15,7 +13,8 @@ import SalesPage         from './pages/SalesPage';
 import TransferPage      from './pages/TransferPage';
 import ReportsPage       from './pages/ReportsPage';
 import UserManagementPage from './pages/UserManagementPage';
-import BranchApp         from './branch/BranchApp';
+import AuditLogsPage      from './pages/AuditLogsPage';
+import BranchApp          from './branch/BranchApp';
 
 import './styles/globals.css';
 import './styles/components.css';
@@ -85,6 +84,7 @@ function AdminRoutes() {
             <Route path="/transfer"  element={<TransferPage />} />
             <Route path="/reports"   element={<ReportsPage />} />
             <Route path="/users"     element={<UserManagementPage />} />
+            <Route path="/audit"     element={<AuditLogsPage />} />
             <Route path="*"          element={<Navigate to="/" replace />} />
           </Routes>
         </AdminLayout>

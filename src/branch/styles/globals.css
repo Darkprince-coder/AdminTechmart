@@ -71,6 +71,16 @@
   /* Font — Plus Jakarta Sans (matches TechMart admin) */
   --font:       'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono:  'JetBrains Mono', ui-monospace, monospace;
+
+  /* Sidebar (desktop) — match TechMart admin shell */
+  --sidebar-w: 248px;
+  --sidebar-bg: #0F172A;
+  --sidebar-border: rgba(255,255,255,.06);
+  --sidebar-hover: rgba(255,255,255,.06);
+  --sidebar-active: rgba(5,150,105,.2);
+  --sidebar-text: #94A3B8;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-icon-opacity: .55;
 }
 
 /* ============================================================
@@ -109,6 +119,14 @@
   --text-secondary: #8B939F;
   --text-tertiary:  #5A6270;
   --text-inverse:   #141618;
+
+  --sidebar-bg: #080E1A;
+  --sidebar-border: rgba(255,255,255,.04);
+  --sidebar-hover: rgba(255,255,255,.05);
+  --sidebar-active: rgba(16,185,129,.18);
+  --sidebar-text: #64748B;
+  --sidebar-text-active: #E2E8F0;
+  --sidebar-icon-opacity: .5;
 
   --shadow-xs: 0 1px 2px rgba(0,0,0,.3);
   --shadow-sm: 0 1px 4px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.2);

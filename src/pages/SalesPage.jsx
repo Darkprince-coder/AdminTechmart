@@ -218,7 +218,7 @@ export default function SalesPage() {
   return (
     <>
     <div className="fade-in">
-      <div className="grid-4 mb-14">
+      <div className="grid-4 mb-md">
         <div className="metric-card">
           <div className="metric-label">Total Revenue</div>
           <div className="metric-value" style={{ fontSize: 18 }}>{fmtKES(totalRevenue)}</div>
@@ -241,7 +241,7 @@ export default function SalesPage() {
         </div>
       </div>
 
-      <div className="grid-2 mb-14" style={{ alignItems: 'start' }}>
+      <div className="grid-2 mb-md" style={{ alignItems: 'start' }}>
         {/* Record sale form */}
         <div className="card">
           <div className="card-header"><span className="card-title">Record a sale</span></div>

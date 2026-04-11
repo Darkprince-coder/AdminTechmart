@@ -38,119 +38,107 @@
   .inv-toolbar { flex-direction: column; align-items: stretch; }
 }
 
-.inventory-mobile-list {
-  display: none;
-  gap: 18px;
+/* Mobile product cards — aligned with branch app (.inv-product-card) */
+.inv-mobile-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.inventory-mobile-card {
-  background: var(--bg-card);
+
+.inv-desktop-table {
+  display: none !important;
+}
+
+.inv-product-card {
+  background: var(--bg-secondary);
   border: 1px solid var(--border-soft);
-  border-radius: 24px;
-  padding: 18px;
-  display: grid;
-  gap: 16px;
-  box-shadow: 0 24px 48px rgba(15, 41, 35, 0.06);
-}
-.inventory-mobile-card-top {
+  border-radius: var(--r-md);
+  padding: 14px 15px;
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color .15s;
+}
+
+.inv-card-low {
+  border-left: 3px solid var(--amber);
+}
+
+.inv-card-oos {
+  border-left: 3px solid var(--red);
+}
+
+.inv-product-header {
+  display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 10px;
 }
-.inventory-mobile-name {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1.2;
+
+.inv-product-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
 }
-.inventory-mobile-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 6px;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-.inventory-mobile-qty {
-  text-align: right;
-  min-width: 72px;
-}
-.inventory-mobile-qty div {
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-}
-.inventory-mobile-qty span {
-  display: block;
+
+.inv-product-branch {
   font-size: 12px;
   color: var(--text-secondary);
 }
-.inventory-mobile-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.inventory-mobile-progress {
-  display: block;
-}
-.inventory-mobile-progress-bar {
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(55, 71, 79, 0.08);
-  overflow: hidden;
-}
-.inventory-mobile-price-grid,
-.inventory-mobile-margin-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-.inventory-mobile-label {
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
-.inventory-mobile-value {
-  font-size: 15px;
+
+.inv-product-qty {
+  font-size: 22px;
   font-weight: 700;
+  font-family: var(--font-mono);
+  line-height: 1;
+  flex-shrink: 0;
+  text-align: center;
+  min-width: 44px;
 }
-.inventory-mobile-action-row {
+
+.inv-product-prices {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.inv-price-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.inv-price-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+}
+
+.inv-product-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.inv-restock-row {
+  display: flex;
+  gap: 8px;
   align-items: center;
 }
-.inventory-mobile-action-row .btn-mobile-sell {
-  width: 100%;
-  justify-content: center;
-  padding: 14px 0;
-}
-.inventory-mobile-action-row .btn-sm {
-  min-width: 0;
-}
 
-@media (max-width: 700px) {
-  .inventory-mobile-card-top,
-  .inventory-mobile-price-grid,
-  .inventory-mobile-margin-grid,
-  .inventory-mobile-action-row {
-    grid-template-columns: 1fr;
+@media (min-width: 768px) {
+  .inv-mobile-list {
+    display: none !important;
   }
-  .inventory-mobile-card-top {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .inventory-mobile-qty {
-    text-align: left;
+  .inv-desktop-table {
+    display: block !important;
+    width: 100%;
   }
 }
 
-@media (max-width: 900px) {
-  .inventory-mobile-list {
-    display: grid;
-  }
-  .inventory-table {
-    display: none;
+@media (max-width: 560px) {
+  .inv-product-prices {
+    grid-template-columns: 1fr 1fr;
   }
 }

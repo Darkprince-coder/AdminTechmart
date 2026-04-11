@@ -123,8 +123,8 @@ export default function TransferPage() {
   };
 
   return (
-    <div className="fade-in">
-      <div className="card mb-14">
+    <div className="fade-in transfer-page">
+      <div className="card">
         <div className="card-header"><span className="card-title">Transfer stock between branches</span></div>
         {shops.length < 2 ? (
           <div className="empty-state">
@@ -197,18 +197,20 @@ export default function TransferPage() {
 
       <div className="card">
         <div className="card-header">
-          <span className="card-title">Transfer log
-            <span style={{ color:'var(--text-secondary)', fontWeight:400, fontSize:12, marginLeft:8 }}>
-              {transfers.length} records
-            </span>
+          <span className="card-title">
+            Transfer log
+            <span className="transfer-log-meta">{transfers.length} records</span>
           </span>
           <button type="button" className="btn btn-ghost btn-sm" onClick={fetchTransfers}>Refresh</button>
         </div>
         {loading ? (
-          <div className="ov-loading" style={{ minHeight:100 }}><div className="spinner"/><span>Loading…</span></div>
+          <div className="transfer-loading">
+            <div className="spinner" />
+            <span>Loading…</span>
+          </div>
         ) : loadError ? (
-          <div className="empty-state" style={{ padding: '24px 16px' }}>
-            <p style={{ color: 'var(--red)', marginBottom: 12 }}>Could not load transfer log.</p>
+          <div className="empty-state transfer-empty-error">
+            <p>Could not load transfer log.</p>
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => fetchTransfers()}>Retry</button>
           </div>
         ) : transfers.length === 0 ? (

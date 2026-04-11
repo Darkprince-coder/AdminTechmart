@@ -49,7 +49,8 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with the admin c
 ```
 src/
 ├── components/
-│   └── AppLayout.jsx       # Sidebar + topbar shell
+│   ├── AdminLayout.jsx     # Admin shell (sidebar, branch filter, topbar)
+│   └── ErrorBoundary.jsx
 ├── context/
 │   ├── AuthContext.jsx     # Supabase auth session
 │   ├── ShopContext.jsx     # Active shop / branch selector
@@ -63,7 +64,9 @@ src/
 │   ├── InventoryPage.jsx   # Products, add/edit/delete, quick sell
 │   ├── SalesPage.jsx       # Record sales, sales history
 │   ├── TransferPage.jsx    # Move stock between branches
-│   └── ReportsPage.jsx     # Analytics, category breakdown
+│   ├── ReportsPage.jsx     # Analytics, category breakdown
+│   ├── UserManagementPage.jsx
+│   └── AuditLogsPage.jsx   # Audit trail (requires audit_logs table)
 └── styles/
     ├── globals.css         # CSS variables, base reset
     ├── components.css      # Shared component styles
@@ -73,8 +76,16 @@ src/
     ├── inventory.css       # Inventory page
     ├── sales.css           # Sales page
     ├── transfer.css        # Transfer page
-    └── reports.css         # Reports page
+    ├── reports.css         # Reports page
+    ├── admin-layout.css    # Scoped admin shell
+    └── users.css           # User management
 ```
+
+`src/branch/` — manager UI (embedded at `/branch`), scoped CSS under `.branch-theme`.
+
+### Deploy (Vercel)
+
+Create a project from this repo, add environment variables `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY`, then deploy. `vercel.json` includes a SPA rewrite to `index.html`.
 
 ---
 

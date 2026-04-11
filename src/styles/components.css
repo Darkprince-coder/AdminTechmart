@@ -379,6 +379,10 @@
   padding: 52px 24px;
   color: var(--text-secondary);
 }
+/* Inside cards, horizontal padding is already provided by .card — avoid double inset */
+.card .empty-state {
+  padding: 28px 0 32px;
+}
 .empty-state-icon {
   width: 52px; height: 52px;
   background: var(--bg-secondary);
