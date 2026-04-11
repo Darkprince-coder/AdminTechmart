@@ -1,0 +1,181 @@
+/* src/styles/globals.css — Ezekii Branch App */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================================
+   LIGHT THEME (default)
+   Muted, warm-neutral surfaces — easy on the eyes
+   ============================================================ */
+:root {
+  /* Brand */
+  --brand:          #1A6B4A;
+  --brand-mid:      #22956A;
+  --brand-light:    #D6EFE5;
+  --brand-dark:     #134E36;
+  --brand-soft:     rgba(26,107,74,.12);
+
+  /* Accent */
+  --amber:          #B06B10;
+  --amber-light:    #F5E9D4;
+  --red:            #9B2C2C;
+  --red-light:      #FAE8E8;
+  --blue:           #1A5A96;
+  --blue-light:     #DEECf8;
+  --green:          #276130;
+  --green-light:    #E1F0E3;
+
+  /* Surfaces — warm off-white, not pure white */
+  --bg-base:        #F2F3F5;
+  --bg-card:        #FAFBFC;
+  --bg-secondary:   #ECEEF1;
+  --bg-hover:       #E5E7EA;
+  --bg-input:       #F7F8F9;
+
+  /* Borders */
+  --border:         #D8DBE0;
+  --border-soft:    #E8EAED;
+  --border-focus:   #22956A;
+
+  /* Text */
+  --text-primary:   #1C1F26;
+  --text-secondary: #5C6370;
+  --text-tertiary:  #9299A4;
+  --text-inverse:   #FFFFFF;
+
+  /* Radius */
+  --r-xs:  4px;
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  16px;
+  --r-xl:  22px;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.05);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.09), 0 2px 4px rgba(0,0,0,.05);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.11), 0 4px 8px rgba(0,0,0,.05);
+
+  /* Layout */
+  --topbar-h:   56px;
+  --nav-h:      52px;
+
+  /* Font — Plus Jakarta Sans (matches TechMart admin) */
+  --font:       'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:  'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ============================================================
+   DARK THEME
+   Deep charcoal, not black — reduces eye strain significantly
+   ============================================================ */
+[data-theme="dark"] {
+  --brand:          #2ABF7A;
+  --brand-mid:      #38D490;
+  --brand-light:    rgba(42,191,122,.15);
+  --brand-dark:     #1D9E65;
+  --brand-soft:     rgba(42,191,122,.10);
+
+  --amber:          #E8A444;
+  --amber-light:    rgba(232,164,68,.15);
+  --red:            #E06060;
+  --red-light:      rgba(224,96,96,.15);
+  --blue:           #5BA3E8;
+  --blue-light:     rgba(91,163,232,.15);
+  --green:          #5EC97A;
+  --green-light:    rgba(94,201,122,.15);
+
+  /* Surfaces — layered charcoal, NOT pure black */
+  --bg-base:        #141618;
+  --bg-card:        #1C1F23;
+  --bg-secondary:   #23272C;
+  --bg-hover:       #2A2F35;
+  --bg-input:       #1E2226;
+
+  --border:         #2E333A;
+  --border-soft:    #262B31;
+  --border-focus:   #2ABF7A;
+
+  --text-primary:   #E8EAF0;
+  --text-secondary: #8B939F;
+  --text-tertiary:  #5A6270;
+  --text-inverse:   #141618;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.3);
+  --shadow-sm: 0 1px 4px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.2);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.4),  0 2px 4px rgba(0,0,0,.25);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,.5),  0 4px 8px rgba(0,0,0,.3);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+html, body, #root {
+  height: 100%;
+  font-family: var(--font);
+  font-size: 14px;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background .2s ease, color .2s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ============================================================
+   UTILITY
+   ============================================================ */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+
+/* ---- Spinner ---- */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--brand);
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ---- Fade in ---- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp .22s ease forwards; }
+
+/* ---- Slide in toast ---- */
+@keyframes slideInRight {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ---- Loading screen ---- */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 14px;
+  background: var(--bg-base);
+}
+.loading-screen p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}

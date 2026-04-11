@@ -1,18 +1,32 @@
-// src/pages/LoginPage.jsx  (ADMIN PROJECT — redesigned)
+// src/pages/LoginPage.jsx  (UNIFIED PROJECT)
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import '../styles/login.css';
 
 export default function LoginPage() {
-  const { signIn }              = useAuth();
+  const { signIn, session, profile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const [searchParams]          = useSearchParams();
+  const navigate                = useNavigate();
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
+
+  const role = searchParams.get('role') || 'admin'; // default to admin
+
+  useEffect(() => {
+    if (!session || !profile) return;
+    if (profile.role === 'admin') {
+      navigate('/admin', { replace: true });
+    } else if (profile.role === 'manager') {
+      navigate('/branch', { replace: true });
+    }
+  }, [session, profile, navigate]);
 
   const handleSubmit = async e => {
     e.preventDefault();
@@ -31,6 +45,8 @@ export default function LoginPage() {
     setLoading(false);
   };
 
+  const isAdmin = role === 'admin';
+
   return (
     <div className="login-bg">
       <div className="login-page">
@@ -46,34 +62,60 @@ export default function LoginPage() {
             </svg>
           </div>
           <div>
-            <div className="login-left-brand-name">TechMart Admin</div>
-            <div className="login-left-brand-sub">Network Control</div>
+            <div className="login-left-brand-name">TechMart {isAdmin ? 'Admin' : 'Branch'}</div>
+            <div className="login-left-brand-sub">{isAdmin ? 'Network Control' : 'Branch Management'}</div>
           </div>
         </div>
 
         <div className="login-left-hero">
           <h1 className="login-left-headline">
-            Manage every branch<br/>
-            from <span>one place</span>
+            {isAdmin ? (
+              <>Manage every branch<br/>from <span>one place</span></>
+            ) : (
+              <>Manage your branch<br/><span>efficiently</span></>
+            )}
           </h1>
           <p className="login-left-sub">
-            Real-time inventory, sales tracking, stock transfers, and branch performance all in a single dashboard built for electronics retailers.
+            {isAdmin ? (
+              'Real-time inventory, sales tracking, stock transfers, and branch performance all in a single dashboard built for electronics retailers.'
+            ) : (
+              'Track inventory, record sales, and manage your branch operations with real-time updates and easy-to-use tools.'
+            )}
           </p>
         </div>
 
         <div className="login-left-stats">
-          <div className="login-stat">
-            <span className="login-stat-val">100%</span>
-            <span className="login-stat-label">Real-time sync</span>
-          </div>
-          <div className="login-stat">
-            <span className="login-stat-val">Multi</span>
-            <span className="login-stat-label">Branch support</span>
-          </div>
-          <div className="login-stat">
-            <span className="login-stat-val">Live</span>
-            <span className="login-stat-label">Profit tracking</span>
-          </div>
+          {isAdmin ? (
+            <>
+              <div className="login-stat">
+                <span className="login-stat-val">100%</span>
+                <span className="login-stat-label">Real-time sync</span>
+              </div>
+              <div className="login-stat">
+                <span className="login-stat-val">Multi</span>
+                <span className="login-stat-label">Branch support</span>
+              </div>
+              <div className="login-stat">
+                <span className="login-stat-val">Live</span>
+                <span className="login-stat-label">Profit tracking</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="login-stat">
+                <span className="login-stat-val">Fast</span>
+                <span className="login-stat-label">Sales recording</span>
+              </div>
+              <div className="login-stat">
+                <span className="login-stat-val">Real-time</span>
+                <span className="login-stat-label">Inventory sync</span>
+              </div>
+              <div className="login-stat">
+                <span className="login-stat-val">Easy</span>
+                <span className="login-stat-label">Branch management</span>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -98,7 +140,9 @@ export default function LoginPage() {
         <div className="login-form-wrap">
           <div className="login-form-header">
             <h2 className="login-form-title">Welcome back</h2>
-            <p className="login-form-sub">Sign in to the admin panel to manage your network.</p>
+            <p className="login-form-sub">
+              Sign in to the {isAdmin ? 'admin panel' : 'branch manager app'} to manage your {isAdmin ? 'network' : 'branch'}.
+            </p>
           </div>
 
           <form className="login-form" onSubmit={handleSubmit} noValidate>
@@ -106,7 +150,7 @@ export default function LoginPage() {
               <label className="form-label" htmlFor="email">Email address</label>
               <input
                 id="email" type="email" className="form-input"
-                placeholder="admin@techmart.co.ke"
+                placeholder={isAdmin ? "admin@techmart.co.ke" : "manager@branch.com"}
                 value={email}
                 onChange={e => { setEmail(e.target.value); setError(''); }}
                 autoComplete="email" autoFocus
@@ -156,7 +200,7 @@ export default function LoginPage() {
             <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading}>
               {loading ? (
                 <><span className="spinner spinner-sm"/> Signing in…</>
-              ) : 'Sign in to admin panel'}
+              ) : `Sign in to ${isAdmin ? 'admin panel' : 'branch app'}`}
             </button>
           </form>
 

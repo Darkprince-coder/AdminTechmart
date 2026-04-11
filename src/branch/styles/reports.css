@@ -1,0 +1,255 @@
+/* src/styles/reports.css — Ezekii Branch App */
+
+/* ---- LOADING ---- */
+.rep-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 50vh;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* ---- PERIOD SELECTOR ---- */
+.rep-filters-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.rep-period-group {
+  display: flex;
+  gap: 4px;
+  width: max-content;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 3px;
+  margin-bottom: 10px;
+}
+.rep-period-btn {
+  padding: 6px 16px;
+  border-radius: var(--r-sm);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font);
+  cursor: pointer;
+  transition: all .14s;
+  white-space: nowrap;
+}
+.rep-period-btn:hover { color: var(--text-primary); }
+.rep-period-btn.active {
+  background: var(--bg-card);
+  color: var(--teal);
+  font-weight: 700;
+  box-shadow: var(--shadow-xs);
+}
+.rep-filter-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+/* ---- 7-DAY BAR CHART ---- */
+.rep-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 120px;
+  padding-top: 8px;
+}
+.rep-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  gap: 3px;
+}
+.rep-bar-wrap {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.rep-bar {
+  width: 100%;
+  border-radius: 4px 4px 0 0;
+  background: var(--brand-light);
+  min-height: 3px;
+  transition: height .3s ease;
+}
+.rep-bar.today {
+  background: var(--brand);
+}
+.rep-bar-label {
+  font-size: 10px;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+.rep-bar-val {
+  font-size: 9px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+
+
+/* ---- CATEGORY BREAKDOWN ---- */
+.rep-cat-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.rep-cat-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.rep-cat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rep-cat-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.rep-cat-rev {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--brand);
+}
+.rep-bar-track {
+  height: 6px;
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.rep-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--brand) 0%, var(--brand-mid) 100%);
+  border-radius: 3px;
+  transition: width .4s ease;
+}
+.rep-cat-sub {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* ---- TOP PRODUCTS ---- */
+/* Mobile */
+.rep-top-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rep-top-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+}
+.rep-top-rank {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.rep-top-info { flex: 1; min-width: 0; }
+.rep-top-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rep-top-stats {
+  display: flex;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.rep-top-profit { color: var(--brand); }
+.rep-top-rev {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Desktop */
+.rep-top-desktop { display: none; }
+@media (min-width: 640px) {
+  .rep-top-mobile  { display: none; }
+  .rep-top-desktop { display: block; }
+}
+
+/* ---- STOCK HEALTH ---- */
+.rep-stock-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.rep-stock-item {
+  background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  padding: 11px 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.rep-stock-val {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  letter-spacing: -.02em;
+}
+
+/* ---- STOCK ALERTS LIST ---- */
+.rep-alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rep-alert-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+}
+.rep-alert-oos { background: var(--red-light); }
+.rep-alert-low { background: var(--amber-light); }
+.rep-alert-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.rep-alert-cat {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
