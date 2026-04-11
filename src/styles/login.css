@@ -1,0 +1,212 @@
+/* src/styles/login.css — TechMart Admin */
+
+/* Outer wrapper (full viewport + safe areas on notched phones) */
+.login-bg {
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  background: var(--bg-base);
+}
+
+.login-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  transition: background .25s;
+}
+
+/* Left panel — brand / illustration (desktop) */
+.login-left {
+  display: none;
+  flex: 1;
+  background: var(--sidebar-bg);
+  position: relative;
+  overflow: hidden;
+  padding: 52px 56px;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Mesh gradient orbs */
+.login-left::before {
+  content: '';
+  position: absolute;
+  top: -120px; left: -120px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(5,150,105,.25) 0%, transparent 65%);
+  pointer-events: none;
+}
+.login-left::after {
+  content: '';
+  position: absolute;
+  bottom: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(37,99,235,.18) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.login-left-brand {
+  display: flex; align-items: center; gap: 13px;
+  position: relative; z-index: 1;
+}
+.login-left-logo {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, rgba(5,150,105,.4), rgba(5,150,105,.1));
+  border: 1px solid rgba(16,185,129,.3);
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 24px rgba(5,150,105,.2);
+}
+.login-left-logo svg {
+  width: 22px; height: 22px;
+  stroke: #10B981; fill: none; stroke-width: 2;
+}
+.login-left-brand-name { font-size: 18px; font-weight: 800; color: #F1F5F9; letter-spacing: -.03em; }
+.login-left-brand-sub  { font-size: 11px; color: rgba(148,163,184,.5); text-transform: uppercase; letter-spacing: .06em; }
+
+.login-left-hero { position: relative; z-index: 1; }
+.login-left-headline {
+  font-size: 36px; font-weight: 800; line-height: 1.15;
+  color: #F1F5F9; letter-spacing: -.04em;
+  margin-bottom: 16px;
+}
+.login-left-headline span { color: #10B981; }
+.login-left-sub {
+  font-size: 15px; color: rgba(148,163,184,.65);
+  line-height: 1.65; max-width: 340px;
+}
+
+.login-left-stats {
+  display: flex; gap: 28px; flex-wrap: wrap;
+  position: relative; z-index: 1;
+}
+.login-stat { display: flex; flex-direction: column; gap: 3px; }
+.login-stat-val {
+  font-size: 24px; font-weight: 800;
+  color: #F1F5F9; font-family: var(--font-mono);
+  letter-spacing: -.03em;
+}
+.login-stat-label { font-size: 11px; color: rgba(148,163,184,.45); text-transform: uppercase; letter-spacing: .06em; }
+
+/* Right panel — form (full width on mobile so grid never squeezes the column) */
+.login-right {
+  width: 100%;
+  max-width: none;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding:
+    max(16px, env(safe-area-inset-top, 0px))
+    max(18px, env(safe-area-inset-right, 0px))
+    max(20px, env(safe-area-inset-bottom, 0px))
+    max(18px, env(safe-area-inset-left, 0px));
+  background: var(--bg-card);
+  position: relative;
+  box-sizing: border-box;
+}
+
+/* Theme toggle — respect safe area */
+.login-theme-btn {
+  position: absolute;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  right: max(14px, env(safe-area-inset-right, 0px));
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--border-soft);
+  background: var(--bg-secondary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-secondary);
+  transition: all .15s;
+  z-index: 2;
+}
+.login-theme-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.login-form-wrap {
+  width: 100%;
+  max-width: 360px;
+  padding-top: 44px;
+}
+
+.login-form-header { margin-bottom: 28px; }
+.login-form-title {
+  font-size: 24px; font-weight: 800;
+  color: var(--text-primary); letter-spacing: -.04em;
+  margin-bottom: 6px;
+}
+.login-form-sub { font-size: 13.5px; color: var(--text-secondary); line-height: 1.55; }
+
+.login-form { display: flex; flex-direction: column; gap: 16px; }
+
+.login-pass-wrap { position: relative; }
+.login-pass-wrap .form-input { padding-right: 44px; }
+.login-pass-eye {
+  position: absolute; right: 12px; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none;
+  cursor: pointer; color: var(--text-tertiary);
+  padding: 4px; display: flex; align-items: center;
+  transition: color .13s;
+}
+.login-pass-eye:hover { color: var(--text-secondary); }
+
+.login-error {
+  display: flex; align-items: flex-start; gap: 9px;
+  background: var(--red-light); color: var(--red);
+  border: 1px solid rgba(220,38,38,.18);
+  border-radius: var(--r-sm);
+  padding: 11px 14px;
+  font-size: 13px; font-weight: 500;
+  line-height: 1.45;
+}
+.login-error svg { flex-shrink: 0; margin-top: 1px; }
+
+.login-footer-text {
+  margin-top: 22px; text-align: center;
+  font-size: 11.5px; color: var(--text-tertiary); line-height: 1.55;
+}
+
+/* Desktop split layout */
+@media (min-width: 900px) {
+  .login-page {
+    flex-direction: row;
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+    align-items: stretch;
+    min-height: 100vh;
+  }
+
+  .login-left {
+    display: flex;
+    flex-direction: column;
+    padding: 52px 56px;
+  }
+
+  .login-right {
+    max-width: none;
+    width: auto;
+    min-height: 100vh;
+    padding: 32px 40px;
+  }
+
+  .login-form-wrap { padding-top: 0; }
+
+  .login-form-title { font-size: 26px; }
+  .login-form-sub { font-size: 14px; }
+  .login-form-header { margin-bottom: 32px; }
+  .login-form { gap: 18px; }
+}
+
+@media (max-width: 480px) {
+  .login-form-title { font-size: 21px; }
+  .login-form-header { margin-bottom: 20px; }
+  .login-form-wrap { max-width: 100%; }
+}
+
+@media (max-width: 380px) {
+  .login-form-title { font-size: 19px; }
+  .login-theme-btn { width: 36px; height: 36px; }
+}

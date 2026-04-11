@@ -1,0 +1,249 @@
+/* ═══════════════════════════════════════════════════════════
+   TECHMART ADMIN — globals.css
+   Command Center aesthetic · Deep navy · Emerald accent
+   ═══════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ────────────────────────────────────────────────────────────
+   LIGHT MODE (default)
+   ──────────────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  /* Brand — rich emerald */
+  --emerald:        #059669;
+  --emerald-mid:    #10B981;
+  --emerald-light:  #D1FAE5;
+  --emerald-dark:   #047857;
+  --emerald-glow:   rgba(5,150,105,.14);
+  --emerald-subtle: rgba(5,150,105,.07);
+
+  /* Alias — reports / sales use --teal for legacy class names */
+  --teal:           var(--emerald);
+  --teal-light:     var(--emerald-light);
+
+  /* Accent palette */
+  --amber:          #D97706;
+  --amber-light:    #FEF3C7;
+  --amber-glow:     rgba(217,119,6,.12);
+  --red:            #DC2626;
+  --red-light:      #FEE2E2;
+  --red-glow:       rgba(220,38,38,.12);
+  --blue:           #2563EB;
+  --blue-light:     #DBEAFE;
+  --violet:         #7C3AED;
+  --violet-light:   #EDE9FE;
+
+  /* Surfaces */
+  --bg-base:        #F8FAFC;
+  --bg-card:        #FFFFFF;
+  --bg-elevated:    #FFFFFF;
+  --bg-secondary:   #F1F5F9;
+  --bg-tertiary:    #E2E8F0;
+  --bg-hover:       #E8EDF4;
+  --bg-input:       #FFFFFF;
+
+  /* Sidebar — always dark in light mode */
+  --sidebar-bg:     #0F172A;
+  --sidebar-border: rgba(255,255,255,.06);
+  --sidebar-hover:  rgba(255,255,255,.06);
+  --sidebar-active: rgba(5,150,105,.2);
+  --sidebar-text:   #94A3B8;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-icon-opacity: .55;
+
+  /* Borders */
+  --border:         #CBD5E1;
+  --border-soft:    #E2E8F0;
+  --border-subtle:  #F1F5F9;
+  --border-focus:   #059669;
+
+  /* Text */
+  --text-primary:   #333538;
+  --text-secondary: #475569;
+  --text-tertiary:  #94A3B8;
+  --text-inverse:   #FFFFFF;
+
+  /* Shadows — layered, directional */
+  --shadow-xs: 0 1px 2px rgba(15,23,42,.04);
+  --shadow-sm: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+  --shadow-md: 0 4px 16px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.04);
+  --shadow-lg: 0 12px 32px rgba(15,23,42,.12), 0 4px 8px rgba(15,23,42,.06);
+  --shadow-xl: 0 24px 64px rgba(15,23,42,.16), 0 8px 16px rgba(15,23,42,.08);
+
+  /* Metric card gradient tops */
+  --grad-emerald: linear-gradient(135deg, #059669 0%, #10B981 100%);
+  --grad-amber:   linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
+  --grad-red:     linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+  --grad-blue:    linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  --grad-violet:  linear-gradient(135deg, #7C3AED 0%, #8B5CF6 100%);
+
+  /* Radius */
+  --r-xs:  4px;
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  18px;
+  --r-xl:  24px;
+  --r-2xl: 32px;
+
+  /* Layout */
+  --sidebar-w: 248px;
+  --topbar-h:  64px;
+
+  /* Fonts — Plus Jakarta Sans: geometric, readable, fits command-center UI */
+  --font:       'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:  'JetBrains Mono', ui-monospace, monospace;
+}
+
+/* ────────────────────────────────────────────────────────────
+   DARK MODE
+   ──────────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --emerald:        #10B981;
+  --emerald-mid:    #34D399;
+  --emerald-light:  rgba(16,185,129,.15);
+  --emerald-dark:   #059669;
+  --emerald-glow:   rgba(16,185,129,.18);
+  --emerald-subtle: rgba(16,185,129,.08);
+
+  --teal:           var(--emerald);
+  --teal-light:     var(--emerald-light);
+
+  --amber:          #F59E0B;
+  --amber-light:    rgba(245,158,11,.15);
+  --amber-glow:     rgba(245,158,11,.14);
+  --red:            #F87171;
+  --red-light:      rgba(248,113,113,.15);
+  --red-glow:       rgba(248,113,113,.14);
+  --blue:           #60A5FA;
+  --blue-light:     rgba(96,165,250,.15);
+  --violet:         #A78BFA;
+  --violet-light:   rgba(167,139,250,.15);
+
+  --bg-base:        #0B1120;
+  --bg-card:        #111827;
+  --bg-elevated:    #1A2235;
+  --bg-secondary:   #1E293B;
+  --bg-tertiary:    #263248;
+  --bg-hover:       #1E293B;
+  --bg-input:       #1A2235;
+
+  --sidebar-bg:     #080E1A;
+  --sidebar-border: rgba(255,255,255,.04);
+  --sidebar-hover:  rgba(255,255,255,.05);
+  --sidebar-active: rgba(16,185,129,.18);
+  --sidebar-text:   #64748B;
+  --sidebar-text-active: #E2E8F0;
+  --sidebar-icon-opacity: .5;
+
+  --border:         #1E293B;
+  --border-soft:    #1A2235;
+  --border-subtle:  #141D2E;
+  --border-focus:   #10B981;
+
+  --text-primary:   #F1F5F9;
+  --text-secondary: #94A3B8;
+  --text-tertiary:  #475569;
+  --text-inverse:   #0F172A;
+
+  --shadow-xs: 0 1px 2px rgba(0,0,0,.4);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.5),  0 1px 2px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.3);
+  --shadow-lg: 0 12px 32px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.4);
+  --shadow-xl: 0 24px 64px rgba(0,0,0,.7), 0 8px 16px rgba(0,0,0,.5);
+}
+
+/* ────────────────────────────────────────────────────────────
+   BASE
+   ──────────────────────────────────────────────────────────── */
+html, body, #root {
+  height: 100%;
+  font-family: var(--font);
+  font-size: 14px;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color .25s ease, color .25s ease;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar        { width: 5px; height: 5px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-tertiary); }
+
+/* ────────────────────────────────────────────────────────────
+   ANIMATIONS
+   ──────────────────────────────────────────────────────────── */
+@keyframes spin         { to { transform: rotate(360deg); } }
+@keyframes pulse-ring   { 0%,100% { opacity: .6; transform: scale(1); }
+                          50%      { opacity: .3; transform: scale(1.1); } }
+@keyframes fadeUp       { from { opacity:0; transform:translateY(10px); }
+                          to   { opacity:1; transform:translateY(0); } }
+@keyframes slideInRight { from { transform:translateX(110%); opacity:0; }
+                          to   { transform:translateX(0);    opacity:1; } }
+@keyframes shimmer      { 0%   { background-position: -200% 0; }
+                          100% { background-position:  200% 0; } }
+@keyframes countUp      { from { opacity:0; transform:translateY(4px); }
+                          to   { opacity:1; transform:translateY(0); } }
+
+.fade-in  { animation: fadeUp .22s ease forwards; }
+.fade-up  { animation: fadeUp .22s ease forwards; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: .04s; }
+.stagger > *:nth-child(2) { animation-delay: .08s; }
+.stagger > *:nth-child(3) { animation-delay: .12s; }
+.stagger > *:nth-child(4) { animation-delay: .16s; }
+
+/* ────────────────────────────────────────────────────────────
+   SPINNER
+   ──────────────────────────────────────────────────────────── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid var(--border);
+  border-top-color: var(--emerald);
+  border-radius: 50%;
+  animation: spin .65s linear infinite;
+  flex-shrink: 0;
+}
+.spinner-sm {
+  width: 15px; height: 15px;
+  border-width: 2px;
+}
+
+/* ────────────────────────────────────────────────────────────
+   PAGE LOADING
+   ──────────────────────────────────────────────────────────── */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  gap: 16px;
+  background: var(--bg-base);
+}
+.loading-screen p { color: var(--text-tertiary); font-size: 13px; letter-spacing: .02em; }
+
+/* ────────────────────────────────────────────────────────────
+   UTILITY
+   ──────────────────────────────────────────────────────────── */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); border: 0;
+}
+.monospace { font-family: var(--font-mono); }
+.truncate  { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

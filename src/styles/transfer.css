@@ -1,0 +1,25 @@
+/* src/styles/transfer.css — TechMart Admin */
+
+.transfer-form { display: flex; flex-direction: column; gap: 16px; }
+
+.transfer-route {
+  display: flex; align-items: flex-end; gap: 14px;
+}
+.transfer-arrow-icon {
+  color: var(--teal); padding-bottom: 10px; flex-shrink: 0;
+}
+
+.transfer-availability {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13px; color: var(--text-secondary);
+  background: var(--blue-light);
+  border: 1px solid rgba(26,95,160,.15);
+  border-radius: var(--r-sm);
+  padding: 9px 13px;
+}
+.transfer-availability svg { color: var(--blue); flex-shrink: 0; }
+
+@media (max-width: 560px) {
+  .transfer-route { flex-direction: column; }
+  .transfer-arrow-icon { padding-bottom: 0; transform: rotate(90deg); align-self: center; }
+}

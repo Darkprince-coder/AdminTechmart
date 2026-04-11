@@ -1,0 +1,39 @@
+/* src/styles/inventory.css — TechMart Admin */
+
+.inv-form-card {
+  border: 1.5px solid var(--teal-light);
+  background: rgba(220,240,232,.08);
+}
+.inv-form { display: flex; flex-direction: column; gap: 16px; }
+.inv-margin-hint {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--teal-light);
+  color: var(--teal);
+  border: 1px solid rgba(13,107,79,.15);
+  border-radius: var(--r-sm);
+  padding: 9px 13px;
+  font-size: 13px; font-weight: 600;
+}
+.inv-form-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--border-soft);
+}
+.inv-toolbar {
+  display: flex; align-items: center;
+  gap: 15px; flex-wrap: wrap;
+  padding:30px 0;
+}
+.inv-export-pdf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.inv-export-pdf-btn svg { flex-shrink: 0; }
+.inv-cat-filters { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+.inv-stock-cell  { display: flex; align-items: center; gap: 8px; }
+.inv-actions     { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+
+@media (max-width: 640px) {
+  .inv-toolbar { flex-direction: column; align-items: stretch; }
+}

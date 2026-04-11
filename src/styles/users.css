@@ -1,0 +1,111 @@
+/* src/styles/users.css  (ADMIN PROJECT — drop-in replacement) */
+
+.um-section { margin-bottom: 16px; }
+
+/* ---- INFO BANNER ---- */
+.um-how-it-works {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--blue-light, #E6F1FB);
+  border: 1px solid rgba(24,95,165,.15);
+  border-radius: var(--radius-md, 10px);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: var(--blue, #185FA5);
+  line-height: 1.55;
+}
+.um-how-it-works svg { flex-shrink: 0; margin-top: 1px; }
+.um-how-it-works strong { font-weight: 600; }
+
+/* ---- INLINE FORMS ---- */
+.um-inline-form {
+  background: var(--color-background-secondary, #F0F2F5);
+  border: 1px solid var(--color-border-secondary, #E2E5EA);
+  border-radius: var(--radius-md, 10px);
+  padding: 16px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.um-form-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.um-edit-note {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: var(--color-background-secondary);
+  border-radius: var(--radius-sm, 6px);
+  padding: 8px 12px;
+}
+.um-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--color-border-tertiary);
+}
+
+/* ---- SHOPS GRID ---- */
+.um-shops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+.um-shop-card {
+  background: var(--color-background-primary);
+  border: 1px solid var(--color-border-tertiary);
+  border-radius: var(--radius-md, 10px);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.um-shop-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.um-shop-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.um-shop-loc {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-top: 1px;
+}
+.um-shop-meta {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.um-shop-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 2px;
+}
+.um-user-pill {
+  background: var(--teal-light, #E1F5EE);
+  color: var(--teal, #0F6E56);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+/* FIX: inactive user pill looks different */
+.um-user-pill-inactive {
+  background: var(--color-background-secondary);
+  color: var(--color-text-tertiary);
+  text-decoration: line-through;
+}
+
+@media (max-width: 540px) {
+  .um-shops-grid { grid-template-columns: 1fr; }
+}

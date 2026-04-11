@@ -1,0 +1,177 @@
+/* src/styles/overview.css — TechMart Admin */
+
+.ov-loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; min-height: 40vh; color: var(--text-secondary); font-size: 14px;
+}
+
+/* ── CHART ROW ── */
+.ov-chart-row {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+@media (max-width: 1100px) { .ov-chart-row { grid-template-columns: 1fr; } }
+
+.ov-chart-card { min-height: 260px; }
+
+/* ── ALERT CARD ── */
+.ov-alert-card { display: flex; flex-direction: column; }
+
+.ov-alert-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 6px var(--red-glow);
+  animation: pulse-ring 2s ease infinite;
+  flex-shrink: 0;
+}
+
+.ov-alert-list {
+  display: flex; flex-direction: column; gap: 6px;
+  flex: 1;
+}
+
+.ov-alert-item {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  transition: background .12s;
+}
+.ov-alert-item:hover { background: var(--bg-secondary); }
+.ov-alert-item.oos { background: var(--red-light); }
+.ov-alert-item.low { background: var(--amber-light); }
+
+.ov-alert-item-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+
+.ov-alert-badge {
+  width: 32px; height: 32px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; font-family: var(--font-mono);
+  flex-shrink: 0;
+}
+.ov-alert-item.oos .ov-alert-badge { background: var(--red-glow); color: var(--red); }
+.ov-alert-item.low .ov-alert-badge { background: var(--amber-glow); color: var(--amber); }
+
+.ov-alert-name {
+  font-size: 13px; font-weight: 600; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ov-alert-shop { font-size: 11.5px; color: var(--text-secondary); margin-top: 1px; }
+
+.ov-alert-more {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  margin-top: 10px; padding: 9px 14px;
+  background: var(--bg-secondary); border: 1px dashed var(--border);
+  border-radius: var(--r-sm); font-size: 12.5px; font-weight: 600;
+  color: var(--text-secondary); cursor: pointer; transition: all .14s;
+  width: 100%; font-family: var(--font);
+}
+.ov-alert-more:hover {
+  background: var(--emerald-subtle); color: var(--emerald);
+  border-color: rgba(5,150,105,.25);
+}
+
+.ov-all-good { background: var(--emerald-subtle) !important; border-color: rgba(5,150,105,.15) !important; }
+.ov-good-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--emerald-subtle); color: var(--emerald);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: 0 0 20px var(--emerald-glow);
+}
+
+/* ── BRANCH CARDS ── */
+.ov-branches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.ov-branch-card {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: all .2s cubic-bezier(.4,0,.2,1);
+  position: relative;
+  box-shadow: var(--shadow-xs);
+}
+.ov-branch-card:hover {
+  border-color: var(--emerald);
+  box-shadow: var(--shadow-md), 0 0 0 1px rgba(5,150,105,.1);
+  transform: translateY(-3px);
+}
+.ov-branch-card.active {
+  border-color: var(--emerald);
+  border-width: 2px;
+  background: var(--emerald-subtle);
+  box-shadow: var(--shadow-sm), 0 0 0 1px rgba(5,150,105,.12);
+}
+
+.ov-branch-rank {
+  position: absolute; top: 14px; right: 16px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--emerald); color: #fff;
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 6px rgba(5,150,105,.4);
+}
+.ov-branch-name {
+  font-size: 16px; font-weight: 700;
+  color: var(--text-primary); margin-bottom: 3px;
+  padding-right: 30px; letter-spacing: -.025em;
+}
+.ov-branch-loc {
+  font-size: 11.5px; color: var(--text-tertiary);
+  display: flex; align-items: center; gap: 4px;
+}
+
+.ov-branch-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 6px; }
+.ov-branch-stat  { display: flex; flex-direction: column; gap: 2px; }
+.ov-branch-stat-label {
+  font-size: 10px; font-weight: 700; color: var(--text-tertiary);
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.ov-branch-stat-val {
+  font-size: 14px; font-weight: 800;
+  color: var(--text-primary);
+  font-family: var(--font-mono); letter-spacing: -.02em;
+}
+
+/* ── TOP PRODUCTS ── */
+.ov-top-list { display: flex; flex-direction: column; gap: 8px; }
+.ov-top-row  {
+  display: flex; align-items: center;
+  justify-content: space-between; gap: 10px;
+  padding: 8px 4px; border-radius: var(--r-sm); transition: background .12s;
+}
+.ov-top-row:hover { background: var(--bg-secondary); }
+.ov-top-left  { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+.ov-top-rank  {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg-secondary); color: var(--text-tertiary);
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.ov-top-name { font-size: 13.5px; font-weight: 500; color: var(--text-primary); }
+.ov-top-right {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.ov-top-bar-wrap {
+  width: 60px; height: 5px;
+  background: var(--bg-tertiary); border-radius: 3px; overflow: hidden;
+}
+.ov-top-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--emerald) 0%, var(--emerald-mid) 100%);
+  border-radius: 3px; transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+.ov-top-val {
+  font-size: 13px; font-weight: 700;
+  color: var(--emerald); font-family: var(--font-mono);
+  min-width: 80px; text-align: right;
+}
