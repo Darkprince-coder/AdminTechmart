@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import '../styles/login.css';
 
 export default function LoginPage() {
-  const { signIn, session, profile } = useAuth();
+  const { signIn, signOut, session, profile } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const [searchParams]          = useSearchParams();
   const navigate                = useNavigate();
@@ -15,33 +16,72 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [error,    setError]    = useState('');
+  const [portalError, setPortalError] = useState('');
   const [loading,  setLoading]  = useState(false);
 
   const role = searchParams.get('role') || 'admin'; // default to admin
 
   useEffect(() => {
     if (!session || !profile) return;
+    if (profile.role !== role) {
+      const mismatchMessage = role === 'admin'
+        ? 'Branch manager accounts cannot sign in to the admin portal. Please use the branch manager login.'
+        : 'Admin accounts cannot sign in to the manager portal. Please use the admin login.';
+      setPortalError(mismatchMessage);
+      setError('');
+      signOut();
+      return;
+    }
     if (profile.role === 'admin') {
       navigate('/admin', { replace: true });
     } else if (profile.role === 'manager') {
       navigate('/branch', { replace: true });
     }
-  }, [session, profile, navigate]);
+  }, [session, profile, navigate, role, signOut]);
 
   const handleSubmit = async e => {
     e.preventDefault();
     setError('');
+    setPortalError('');
     if (!email.trim())    { setError('Enter your email address'); return; }
     if (!password.trim()) { setError('Enter your password'); return; }
     setLoading(true);
-    const { error } = await signIn(email.trim(), password);
-    if (error) {
+
+    const { error: signInError } = await signIn(email.trim(), password);
+    if (signInError) {
       setError(
-        error.message?.includes('Invalid login')
+        signInError.message?.includes('Invalid login')
           ? 'Incorrect email or password.'
-          : error.message || 'Sign in failed.'
+          : signInError.message || 'Sign in failed.'
       );
+      setLoading(false);
+      return;
     }
+
+    const { data, error: profileError } = await supabase.rpc('get_my_profile');
+    if (profileError) {
+      setError('Unable to validate your account. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    const currentProfile = data?.[0] || null;
+    if (!currentProfile) {
+      setError('No profile found for this account. Contact support.');
+      setLoading(false);
+      return;
+    }
+
+    if (currentProfile.role !== role) {
+      const mismatchMessage = role === 'admin'
+        ? 'Branch manager accounts cannot sign in to the admin portal. Please use the branch manager login.'
+        : 'Admin accounts cannot sign in to the manager portal. Please use the admin login.';
+      await signOut();
+      navigate('/', { replace: true, state: { portalError: mismatchMessage } });
+      setLoading(false);
+      return;
+    }
+
     setLoading(false);
   };
 
@@ -186,14 +226,14 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {error && (
+            {(error || portalError) && (
               <div className="login-error">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="8" x2="12" y2="12"/>
                   <line x1="12" y1="16" x2="12.01" y2="16"/>
                 </svg>
-                {error}
+                {portalError || error}
               </div>
             )}
 

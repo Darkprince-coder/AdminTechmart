@@ -2,17 +2,11 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,500&family=JetBrains+Mono:wght@400;500&display=swap');
 
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
 /* ============================================================
    LIGHT THEME (default)
    Muted, warm-neutral surfaces — easy on the eyes
    ============================================================ */
-:root {
+.branch-theme {
   /* Brand */
   --brand:          #1A6B4A;
   --brand-mid:      #22956A;
@@ -68,13 +62,18 @@
   /* Font — Plus Jakarta Sans (matches TechMart admin) */
   --font:       'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono:  'JetBrains Mono', ui-monospace, monospace;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 14px;
+  transition: background .2s ease, color .2s ease;
 }
 
 /* ============================================================
    DARK THEME
    Deep charcoal, not black — reduces eye strain significantly
    ============================================================ */
-[data-theme="dark"] {
+.branch-theme[data-theme="dark"] {
   --brand:          #2ABF7A;
   --brand-mid:      #38D490;
   --brand-light:    rgba(42,191,122,.15);
@@ -115,8 +114,9 @@
 /* ============================================================
    BASE
    ============================================================ */
-html, body, #root {
-  height: 100%;
+.branch-theme {
+  min-height: 100vh;
+  min-height: 100dvh;
   font-family: var(--font);
   font-size: 14px;
   background: var(--bg-base);
@@ -135,7 +135,7 @@ html, body, #root {
 /* ============================================================
    UTILITY
    ============================================================ */
-.sr-only {
+.branch-theme .sr-only {
   position: absolute; width: 1px; height: 1px;
   padding: 0; margin: -1px; overflow: hidden;
   clip: rect(0,0,0,0); border: 0;

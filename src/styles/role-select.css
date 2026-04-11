@@ -30,6 +30,18 @@
   font-size: 16px;
 }
 
+.role-select-alert {
+  margin: 24px 0 0;
+  padding: 18px 20px;
+  background: rgba(245, 107, 108, 0.12);
+  border: 1px solid rgba(245, 107, 108, 0.28);
+  border-radius: 14px;
+  color: #B91C1C;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 .role-select-options {
   display: grid;
   gap: 20px;

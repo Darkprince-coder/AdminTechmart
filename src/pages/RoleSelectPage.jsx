@@ -1,12 +1,26 @@
 // src/pages/RoleSelectPage.jsx
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import '../styles/role-select.css';
 
 export default function RoleSelectPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [portalError, setPortalError] = useState('');
+  const { session, profile, signOut } = useAuth();
 
-  const handleRoleSelect = (role) => {
-    // Navigate to login with role param
+  useEffect(() => {
+    if (location.state?.portalError) {
+      setPortalError(location.state.portalError);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
+  const handleRoleSelect = async (role) => {
+    if (session && profile && profile.role !== role) {
+      await signOut();
+    }
     navigate(`/login?role=${role}`);
   };
 
@@ -17,6 +31,11 @@ export default function RoleSelectPage() {
           <h1>Welcome to TechMart</h1>
           <p>Select your role to continue</p>
         </div>
+        {portalError && (
+          <div className="role-select-alert">
+            <strong>Wrong portal selected:</strong> {portalError}
+          </div>
+        )}
         <div className="role-select-options">
           <button
             className="role-btn role-admin"
