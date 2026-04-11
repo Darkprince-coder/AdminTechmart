@@ -41,11 +41,12 @@
   background: var(--bg-card);
   border: 1px solid var(--border-soft);
   border-radius: var(--r-md);
-  padding: 16px;
+  padding: 18px 16px;
   box-shadow: var(--shadow-xs);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  min-height: 0;
 }
 
 .branch-theme .metric-label {
@@ -220,4 +221,268 @@
   opacity: .5;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+.branch-theme .btn-xs {
+  padding: 4px 9px;
+  font-size: 11.5px;
+  border-radius: var(--r-xs);
+}
+
+/* Grid / spacing — scoped so branch tokens win over global admin helpers */
+.branch-theme .grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  row-gap: 18px;
+}
+.branch-theme .grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  row-gap: 18px;
+}
+.branch-theme .mb-md { margin-bottom: 18px; }
+
+@media (max-width: 1100px) {
+  .branch-theme .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 700px) {
+  .branch-theme .grid-2,
+  .branch-theme .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* Empty state when manager has no shop_id */
+.branch-theme .branch-no-shop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: min(420px, 70vh);
+  padding: 24px 16px;
+}
+.branch-theme .branch-no-shop-card {
+  max-width: 400px;
+  text-align: center;
+  padding: 28px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-sm);
+}
+.branch-theme .branch-no-shop-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 14px;
+  background: var(--brand-light);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.branch-theme .branch-no-shop-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.branch-theme .branch-no-shop-desc {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   FORMS — branch tokens (override global admin .form-* inside .branch-theme)
+   ============================================================ */
+.branch-theme .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.branch-theme .form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.01em;
+}
+
+.branch-theme .form-input,
+.branch-theme .form-select,
+.branch-theme .form-textarea {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-family: var(--font);
+  width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.branch-theme .form-input:focus,
+.branch-theme .form-select:focus,
+.branch-theme .form-textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+  background: var(--bg-input);
+}
+
+.branch-theme .form-input::placeholder,
+.branch-theme .form-textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+.branch-theme .form-input-error {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 0 3px rgba(155, 44, 44, 0.12) !important;
+}
+
+.branch-theme .form-hint {
+  font-size: 11.5px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+.branch-theme .form-error-msg {
+  font-size: 11.5px;
+  color: var(--red);
+  margin-top: 2px;
+}
+
+/* ============================================================
+   SEARCH (inventory / sales toolbars)
+   ============================================================ */
+.branch-theme .search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 0 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  min-height: 40px;
+}
+
+.branch-theme .search-wrap:focus-within {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.branch-theme .search-wrap svg,
+.branch-theme .search-icon {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.branch-theme .search-wrap input {
+  border: none;
+  background: transparent;
+  padding: 10px 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-family: var(--font);
+  color: var(--text-primary);
+}
+
+.branch-theme .search-wrap input:focus {
+  outline: none;
+}
+
+.branch-theme .search-wrap input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ============================================================
+   TABLES — branch manager lists
+   ============================================================ */
+.branch-theme .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r-sm);
+  width: 100%;
+}
+
+.branch-theme .data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.branch-theme .data-table th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  white-space: nowrap;
+  background: var(--bg-secondary);
+}
+
+.branch-theme .data-table th:first-child {
+  border-radius: var(--r-xs) 0 0 0;
+}
+
+.branch-theme .data-table th:last-child {
+  border-radius: 0 var(--r-xs) 0 0;
+}
+
+.branch-theme .data-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.branch-theme .data-table tr:last-child td {
+  border-bottom: none;
+}
+
+.branch-theme .data-table tbody tr {
+  transition: background 0.1s;
+}
+
+.branch-theme .data-table tbody tr:hover td {
+  background: var(--bg-hover);
+}
+
+.branch-theme .data-table tbody tr:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--brand);
+}
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.branch-theme .empty-state {
+  text-align: center;
+  padding: 28px 20px;
+  color: var(--text-secondary);
+}
+
+.branch-theme .empty-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--bg-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  color: var(--text-tertiary);
+}
+
+.branch-theme .empty-state p {
+  font-size: 13px;
+  line-height: 1.6;
 }

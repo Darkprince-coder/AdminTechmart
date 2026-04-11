@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 import { fmtKES, fmtDate, fmtTime, isToday } from '../lib/utils';
+import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/sales-scoped.css';
 
 const EMPTY_FORM = {
@@ -38,7 +39,10 @@ export default function SalesPage({ onNavigate }) {
 
   // ---- Fetch sales — showLoading only on first load ----
   const fetchSales = useCallback(async (showLoading = false) => {
-    if (!shopId) return;
+    if (!shopId) {
+      if (showLoading) setLoading(false);
+      return;
+    }
     if (showLoading) setLoading(true);
     const { data, error } = await supabase
       .from('sales')
@@ -192,6 +196,8 @@ const handleDeleteSale = async () => {
   setDeleting(false);
   setDeleteConfirm(null);
 };
+
+  if (!shopId) return <NoShopAssigned />;
 
   // ---- Metrics ----
   const todaySales  = sales.filter(s => isToday(s.created_at));

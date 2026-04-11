@@ -7,6 +7,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { fmtKES, fmtDateShort, stockStatus } from '../lib/utils';
+import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/reports.css';
 
 const PERIODS = [
@@ -39,7 +40,10 @@ export default function ReportsPage() {
   const [period,   setPeriod]   = useState('today');
 
   const fetchData = useCallback(async () => {
-    if (!shopId) return;
+    if (!shopId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const [salesRes, prodRes] = await Promise.all([
       supabase
@@ -59,6 +63,8 @@ export default function ReportsPage() {
   }, [shopId]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  if (!shopId) return <NoShopAssigned />;
 
   // ---- Filter sales by period ----
   const start = periodStart(period);

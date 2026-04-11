@@ -151,6 +151,21 @@
   gap: 10px;
 }
 
+/* Mobile = cards, desktop = table (rules live in inventory.css but that file is not bundled) */
+.branch-theme .inv-desktop-table {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  .branch-theme .inv-mobile-list {
+    display: none !important;
+  }
+  .branch-theme .inv-desktop-table {
+    display: block !important;
+    width: 100%;
+  }
+}
+
 .branch-theme .inv-product-card {
   background: var(--bg-secondary);
   border: 1px solid var(--border-soft);

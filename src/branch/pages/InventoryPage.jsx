@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../lib/supabase';
 import { fmtKES, stockStatus, stockPct, margin } from '../lib/utils';
+import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/inventory-scoped.css';
 
 // Ezekii Electronics Isinet — tailored category list
@@ -53,7 +54,11 @@ export default function InventoryPage() {
 
   // ---- Fetch ----
   const fetchProducts = useCallback(async () => {
-    if (!shopId) return;
+    if (!shopId) {
+      setLoading(false);
+      setFetchError(false);
+      return;
+    }
     setLoading(true);
     setFetchError(false);
     const { data, error } = await supabase
@@ -224,6 +229,8 @@ export default function InventoryPage() {
       fetchProducts();
     }
   };
+
+  if (!shopId) return <NoShopAssigned />;
 
   return (
     <>

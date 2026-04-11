@@ -42,6 +42,7 @@
   /* Borders */
   --border:         #D8DBE0;
   --border-soft:    #E8EAED;
+  --border-strong:  #B8BCC4;
   --border-focus:   #22956A;
 
   /* Text */
@@ -101,6 +102,7 @@
 
   --border:         #2E333A;
   --border-soft:    #262B31;
+  --border-strong:  #3D4249;
   --border-focus:   #2ABF7A;
 
   --text-primary:   #E8EAF0;

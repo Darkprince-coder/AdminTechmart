@@ -9,8 +9,9 @@
 .ov-chart-row {
   display: grid;
   grid-template-columns: 1fr 360px;
-  gap: 18px;
-  margin-bottom: 20px;
+  gap: 22px;
+  row-gap: 22px;
+  margin-bottom: 24px;
 }
 @media (max-width: 1100px) { .ov-chart-row { grid-template-columns: 1fr; } }
 

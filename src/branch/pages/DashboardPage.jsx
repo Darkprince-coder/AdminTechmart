@@ -6,6 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { fmtKES, fmtTime, isToday } from '../lib/utils';
+import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/dashboard-scoped.css';
 
 export default function DashboardPage({ onNavigate }) {
@@ -15,7 +16,12 @@ export default function DashboardPage({ onNavigate }) {
   const [loadError, setLoadError] = useState(false);
 
   const load = useCallback(async () => {
-    if (!shopId) return;
+    if (!shopId) {
+      setLoading(false);
+      setLoadError(false);
+      setData(null);
+      return;
+    }
     setLoading(true);
     setLoadError(false);
     try {
@@ -43,6 +49,8 @@ export default function DashboardPage({ onNavigate }) {
   }, [shopId]);
 
   useEffect(() => { load(); }, [load]);
+
+  if (!shopId) return <NoShopAssigned />;
 
   if (loading) return (
     <div className="dash-loading">

@@ -55,47 +55,61 @@
   gap: 10px;
 }
 
-/* ---- 7-DAY BAR CHART ---- */
+/* ---- 7-DAY BAR CHART (isolated from admin .rep-* — admin reports.css is scoped to .admin-layout) ---- */
 .branch-theme .rep-chart {
   display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 120px;
-  padding-top: 8px;
+  align-items: stretch;
+  gap: 8px;
+  min-height: 148px;
+  height: auto;
+  padding: 4px 2px 0;
+  box-sizing: border-box;
 }
 .branch-theme .rep-bar-col {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
-  gap: 3px;
+  justify-content: flex-end;
+  gap: 6px;
 }
 .branch-theme .rep-bar-wrap {
-  flex: 1;
   width: 100%;
+  height: 108px;
+  min-height: 72px;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  box-sizing: border-box;
 }
 .branch-theme .rep-bar {
   width: 100%;
-  border-radius: 4px 4px 0 0;
+  flex: 0 0 auto;
+  border-radius: 6px 6px 0 0;
   background: var(--brand-light);
-  min-height: 3px;
+  min-height: 4px;
+  max-height: 100%;
   transition: height .3s ease;
 }
 .branch-theme .rep-bar.today {
   background: var(--brand);
+  box-shadow: 0 0 0 1px rgba(26, 107, 74, 0.12);
 }
 .branch-theme .rep-bar-label {
   font-size: 10px;
   color: var(--text-tertiary);
-  font-weight: 500;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
 }
 .branch-theme .rep-bar-val {
   font-size: 9px;
   color: var(--text-secondary);
   font-family: var(--font-mono);
+  text-align: center;
+  line-height: 1.2;
 }
 
 /* ---- CATEGORY BREAKDOWN ---- */
@@ -145,12 +159,6 @@
 }
 
 /* ---- TOP PRODUCTS ---- */
-/* Mobile */
-.branch-theme .rep-top-mobile {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 .branch-theme .rep-top-card {
   display: flex;
   align-items: center;
@@ -195,11 +203,23 @@
   flex-shrink: 0;
 }
 
-/* Desktop */
-.branch-theme .rep-top-desktop { display: none; }
-@media (min-width: 640px) {
-  .branch-theme .rep-top-mobile  { display: none; }
-  .branch-theme .rep-top-desktop { display: block; }
+/* Desktop: hide stacked cards from md up — !important beats any global .rep-* leftovers */
+.branch-theme .rep-top-desktop {
+  display: none !important;
+}
+.branch-theme .rep-top-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  .branch-theme .rep-top-mobile {
+    display: none !important;
+  }
+  .branch-theme .rep-top-desktop {
+    display: block !important;
+    width: 100%;
+  }
 }
 
 /* ---- STOCK HEALTH ---- */

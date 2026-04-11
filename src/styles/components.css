@@ -422,14 +422,14 @@
 /* ────────────────────────────────────────────────────────────
    GRID HELPERS
    ──────────────────────────────────────────────────────────── */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; row-gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; row-gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; row-gap: 22px; }
 .gap-sm { gap: 10px; }
 .gap-md { gap: 16px; }
 .mb-sm  { margin-bottom: 12px; }
-.mb-md  { margin-bottom: 18px; }
-.mb-lg  { margin-bottom: 24px; }
+.mb-md  { margin-bottom: 22px; }
+.mb-lg  { margin-bottom: 28px; }
 
 @media (max-width: 1100px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 700px)  { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }

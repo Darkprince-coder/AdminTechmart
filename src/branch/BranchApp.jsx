@@ -18,9 +18,9 @@ export default function BranchApp() {
     <ToastProvider>
       <div className="branch-theme" data-theme={theme}>
         <AppShell activePage={activePage} onNavigate={setActivePage}>
-          {activePage === 'dashboard' && <DashboardPage />}
+          {activePage === 'dashboard' && <DashboardPage onNavigate={setActivePage} />}
           {activePage === 'inventory' && <InventoryPage />}
-          {activePage === 'sales' && <SalesPage />}
+          {activePage === 'sales' && <SalesPage onNavigate={setActivePage} />}
           {activePage === 'reports' && <ReportsPage />}
         </AppShell>
       </div>

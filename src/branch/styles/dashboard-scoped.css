@@ -144,3 +144,305 @@
   letter-spacing: .03em;
   font-weight: 500;
 }
+
+.branch-theme .dash-stock-meta {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-top: 1px;
+}
+
+.branch-theme .dash-stock-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 9px 14px;
+  background: var(--bg-secondary);
+  border: 1px dashed var(--border);
+  border-radius: var(--r-sm);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.14s;
+  width: 100%;
+  font-family: var(--font);
+}
+
+.branch-theme .dash-stock-more:hover {
+  background: var(--brand-light);
+  color: var(--brand);
+  border-color: rgba(26, 107, 74, 0.28);
+}
+
+.branch-theme .dash-stock-all-good {
+  border-style: solid;
+  border-color: rgba(26, 107, 74, 0.15);
+  background: linear-gradient(180deg, var(--brand-light) 0%, var(--bg-card) 100%);
+}
+
+.branch-theme .dash-stock-good-inner {
+  text-align: center;
+  padding: 20px 16px 8px;
+}
+
+.branch-theme .dash-stock-good-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: var(--shadow-xs);
+}
+
+.branch-theme .dash-stock-good-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.branch-theme .dash-stock-good-desc {
+  font-size: 12.5px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* ---- RECENT SALES ---- */
+.branch-theme .dash-sales-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.branch-theme .dash-sale-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 4px;
+  border-bottom: 1px solid var(--border-soft);
+  transition: background 0.1s;
+  border-radius: var(--r-xs);
+}
+
+.branch-theme .dash-sale-row:last-child {
+  border-bottom: none;
+}
+
+.branch-theme .dash-sale-row:hover {
+  background: var(--bg-hover);
+}
+
+.branch-theme .dash-sale-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.branch-theme .dash-sale-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.branch-theme .dash-sale-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.branch-theme .dash-sale-meta {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.branch-theme .dash-sale-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.branch-theme .dash-sale-amount {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--brand);
+  font-family: var(--font-mono);
+}
+
+.branch-theme .dash-sale-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  margin-top: 2px;
+}
+
+/* ---- TOP SELLERS ---- */
+.branch-theme .dash-top-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.branch-theme .dash-top-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.branch-theme .dash-top-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 140px;
+  flex-shrink: 0;
+}
+
+.branch-theme .dash-top-rank {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--text-tertiary);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.branch-theme .dash-top-name {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.branch-theme .dash-top-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-secondary);
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.branch-theme .dash-top-bar {
+  height: 100%;
+  background: var(--brand);
+  border-radius: 3px;
+  opacity: 0.7;
+  transition: width 0.4s ease;
+}
+
+.branch-theme .dash-top-rev {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--brand);
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: right;
+}
+
+/* ---- TODAY STATS ---- */
+.branch-theme .dash-today-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.branch-theme .dash-today-stat {
+  background: var(--bg-secondary);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.branch-theme .dash-today-val {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  letter-spacing: -0.02em;
+}
+
+/* ---- QUICK ACTIONS ---- */
+.branch-theme .dash-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.branch-theme .dash-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border-soft);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.14s;
+  font-family: var(--font);
+  width: 100%;
+}
+
+.branch-theme .dash-action-btn:hover {
+  background: var(--brand-light);
+  border-color: rgba(26, 107, 74, 0.2);
+}
+
+.branch-theme .dash-action-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-sm);
+  background: var(--brand-light);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.14s;
+}
+
+.branch-theme .dash-action-btn:hover .dash-action-icon {
+  background: var(--brand);
+  color: #fff;
+}
+
+.branch-theme .dash-action-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.branch-theme .dash-action-sub {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+@media (max-width: 480px) {
+  .branch-theme .dash-top-meta {
+    width: 100px;
+  }
+}

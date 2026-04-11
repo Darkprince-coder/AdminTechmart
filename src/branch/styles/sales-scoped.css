@@ -238,15 +238,16 @@
 }
 
 /* Mobile = cards, Desktop = table */
-.branch-theme .sales-desktop-table { 
-  display: none; 
+.branch-theme .sales-desktop-table {
+  display: none !important;
 }
 
-@media (min-width: 640px) {
-  .branch-theme .sales-mobile-list    { 
-    display: none; 
+@media (min-width: 768px) {
+  .branch-theme .sales-mobile-list {
+    display: none !important;
   }
-  .branch-theme .sales-desktop-table  { 
-    display: block; 
+  .branch-theme .sales-desktop-table {
+    display: block !important;
+    width: 100%;
   }
 }
