@@ -25,8 +25,8 @@ const PAGE_META = {
   '/inventory': { title: 'Inventory',          sub: 'Products & stock levels'  },
   '/sales':     { title: 'Sales',              sub: 'Transactions & revenue'   },
   '/transfer':  { title: 'Stock Transfer',     sub: 'Move stock between branches' },
-  '/reports':   { title: 'Reports',            sub: 'Analytics & summaries'    },
-  '/users':     { title: 'Users & Branches',   sub: 'Manage team access'       },
+  '/reports':    { title: 'Reports',            sub: 'Analytics & summaries'    },
+  '/users':      { title: 'Users & Branches',   sub: 'Manage team access'       },
 };
 
 export default function AppLayout({ children }) {

@@ -13,7 +13,7 @@ import { supabase } from './supabase';
  * @param {Record<string, unknown>} [opts.metadata]
  */
 export async function insertAuditLog({ action, entityType, entityId, metadata }) {
-  try {
+/*   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user?.id) return;
 
@@ -25,10 +25,10 @@ export async function insertAuditLog({ action, entityType, entityId, metadata })
       metadata: metadata ?? {},
     });
 
-    if (error && process.env.NODE_ENV === 'development') {
-      console.warn('[audit_logs]', error.message);
+    if (error) {
+      console.warn('[audit_logs] insert failed', error.message, error.details || error.hint || '');
     }
   } catch (e) {
-    if (process.env.NODE_ENV === 'development') console.warn('[audit_logs]', e);
-  }
+    console.warn('[audit_logs] insert exception', e);
+  } */
 }

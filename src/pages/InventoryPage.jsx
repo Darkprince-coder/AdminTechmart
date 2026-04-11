@@ -428,72 +428,154 @@ export default function InventoryPage() {
               : 'No products yet. Click "Add product" to get started.'}</p>
           </div>
         ) : (
-          <div className="table-wrap">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Product</th>
-                  <th>Category</th>
-                  {activeShopId === 'all' && <th>Branch</th>}
-                  <th>Buy</th>
-                  <th>Sell</th>
-                  <th>Margin</th>
-                  <th>Stock</th>
-                  <th>Status</th>
-                  <th style={{ textAlign: 'right' }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map(p => {
-                  const { status, label } = stockStatus(p.quantity||0, p.alert_qty||5);
-                  const pct = stockPct(p.quantity||0, p.alert_qty||5);
-                  const mg  = margin(p.buy_price||0, p.sell_price||0);
-                  return (
-                    <tr key={p.id}>
-                      <td style={{ fontWeight: 500 }}>{p.name}</td>
-                      <td><span className="badge badge-info">{p.category || '—'}</span></td>
-                      {activeShopId === 'all' && (
-                        <td style={{ fontSize:12, color:'var(--text-secondary)' }}>
-                          {p.shops?.name || '—'}
+          <>
+            <div className="inventory-mobile-list">
+              {visible.map(p => {
+                const { status, label } = stockStatus(p.quantity||0, p.alert_qty||5);
+                const pct = stockPct(p.quantity||0, p.alert_qty||5);
+                const profit = (p.sell_price || 0) - (p.buy_price || 0);
+                const mg = margin(p.buy_price||0, p.sell_price||0);
+                return (
+                  <div key={p.id} className="inventory-mobile-card">
+                    <div className="inventory-mobile-card-top">
+                      <div>
+                        <div className="inventory-mobile-name">{p.name}</div>
+                        <div className="inventory-mobile-meta">
+                          <span>{p.category || 'Other'}</span>
+                          {activeShopId === 'all' && (
+                            <span>{p.shops?.name || 'Branch not set'}</span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="inventory-mobile-qty">
+                        <div>{p.quantity ?? 0}</div>
+                        <span>units</span>
+                      </div>
+                    </div>
+
+                    <div className="inventory-mobile-badges">
+                      <span className={`badge badge-info`}>{p.category || 'Other'}</span>
+                      <span className={`badge badge-${status}`}>{label}</span>
+                    </div>
+
+                    <div className="inventory-mobile-progress">
+                      <div className="inventory-mobile-progress-bar">
+                        <div className={`progress-fill progress-${status}`} style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+
+                    <div className="inventory-mobile-price-grid">
+                      <div>
+                        <div className="inventory-mobile-label">BUY PRICE</div>
+                        <div className="inventory-mobile-value">{fmtKES(p.buy_price)}</div>
+                      </div>
+                      <div>
+                        <div className="inventory-mobile-label">SELL PRICE</div>
+                        <div className="inventory-mobile-value">{fmtKES(p.sell_price)}</div>
+                      </div>
+                    </div>
+
+                    <div className="inventory-mobile-price-grid inventory-mobile-margin-grid">
+                      <div>
+                        <div className="inventory-mobile-label">PROFIT / UNIT</div>
+                        <div className="inventory-mobile-value">{fmtKES(profit)}</div>
+                      </div>
+                      <div>
+                        <div className="inventory-mobile-label">MARGIN</div>
+                        <div className="inventory-mobile-value" style={{ color: mg >= 20 ? 'var(--teal)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
+                          {mg}%
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="inventory-mobile-action-row">
+                      <button className="btn btn-primary btn-mobile-sell"
+                        onClick={() => handleQuickSell(p)}
+                        disabled={(p.quantity||0) === 0}>
+                        Sell 1
+                      </button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>
+                        Restock
+                      </button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>
+                        Edit
+                      </button>
+                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p)}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="table-wrap inventory-table">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    {activeShopId === 'all' && <th>Branch</th>}
+                    <th>Buy</th>
+                    <th>Sell</th>
+                    <th>Margin</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th style={{ textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map(p => {
+                    const { status, label } = stockStatus(p.quantity||0, p.alert_qty||5);
+                    const pct = stockPct(p.quantity||0, p.alert_qty||5);
+                    const mg  = margin(p.buy_price||0, p.sell_price||0);
+                    return (
+                      <tr key={p.id}>
+                        <td style={{ fontWeight: 500 }}>{p.name}</td>
+                        <td><span className="badge badge-info">{p.category || '—'}</span></td>
+                        {activeShopId === 'all' && (
+                          <td style={{ fontSize:12, color:'var(--text-secondary)' }}>
+                            {p.shops?.name || '—'}
+                          </td>
+                        )}
+                        <td style={{ fontSize: 12 }}>{fmtKES(p.buy_price)}</td>
+                        <td style={{ fontSize: 12 }}>{fmtKES(p.sell_price)}</td>
+                        <td style={{ fontSize:12, fontWeight:600,
+                          color: mg>=20?'var(--teal)':mg>0?'var(--amber)':'var(--red)' }}>
+                          {mg}%
                         </td>
-                      )}
-                      <td style={{ fontSize: 12 }}>{fmtKES(p.buy_price)}</td>
-                      <td style={{ fontSize: 12 }}>{fmtKES(p.sell_price)}</td>
-                      <td style={{ fontSize:12, fontWeight:600,
-                        color: mg>=20?'var(--teal)':mg>0?'var(--amber)':'var(--red)' }}>
-                        {mg}%
-                      </td>
-                      <td>
-                        <div className="inv-stock-cell">
-                          <span style={{ fontWeight: 600 }}>{p.quantity ?? 0}</span>
-                          <div className="progress-wrap">
-                            <div className={`progress-fill progress-${status}`}
-                              style={{ width: `${pct}%` }}/>
+                        <td>
+                          <div className="inv-stock-cell">
+                            <span style={{ fontWeight: 600 }}>{p.quantity ?? 0}</span>
+                            <div className="progress-wrap">
+                              <div className={`progress-fill progress-${status}`}
+                                style={{ width: `${pct}%` }}/>
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td><span className={`badge badge-${status}`}>{label}</span></td>
-                      <td>
-                        <div className="inv-actions">
-                          <button className="btn btn-secondary btn-sm"
-                            onClick={() => handleQuickSell(p)}
-                            disabled={(p.quantity||0) === 0}>
-                            Sell 1
-                          </button>
-                          <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>
-                            Edit
-                          </button>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p)}>
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        </td>
+                        <td><span className={`badge badge-${status}`}>{label}</span></td>
+                        <td>
+                          <div className="inv-actions">
+                            <button className="btn btn-secondary btn-sm"
+                              onClick={() => handleQuickSell(p)}
+                              disabled={(p.quantity||0) === 0}>
+                              Sell 1
+                            </button>
+                            <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>
+                              Edit
+                            </button>
+                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p)}>
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

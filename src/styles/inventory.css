@@ -37,3 +37,120 @@
 @media (max-width: 640px) {
   .inv-toolbar { flex-direction: column; align-items: stretch; }
 }
+
+.inventory-mobile-list {
+  display: none;
+  gap: 18px;
+}
+.inventory-mobile-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 24px;
+  padding: 18px;
+  display: grid;
+  gap: 16px;
+  box-shadow: 0 24px 48px rgba(15, 41, 35, 0.06);
+}
+.inventory-mobile-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.inventory-mobile-name {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.inventory-mobile-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.inventory-mobile-qty {
+  text-align: right;
+  min-width: 72px;
+}
+.inventory-mobile-qty div {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.inventory-mobile-qty span {
+  display: block;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.inventory-mobile-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.inventory-mobile-progress {
+  display: block;
+}
+.inventory-mobile-progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(55, 71, 79, 0.08);
+  overflow: hidden;
+}
+.inventory-mobile-price-grid,
+.inventory-mobile-margin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.inventory-mobile-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.inventory-mobile-value {
+  font-size: 15px;
+  font-weight: 700;
+}
+.inventory-mobile-action-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: center;
+}
+.inventory-mobile-action-row .btn-mobile-sell {
+  width: 100%;
+  justify-content: center;
+  padding: 14px 0;
+}
+.inventory-mobile-action-row .btn-sm {
+  min-width: 0;
+}
+
+@media (max-width: 700px) {
+  .inventory-mobile-card-top,
+  .inventory-mobile-price-grid,
+  .inventory-mobile-margin-grid,
+  .inventory-mobile-action-row {
+    grid-template-columns: 1fr;
+  }
+  .inventory-mobile-card-top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .inventory-mobile-qty {
+    text-align: left;
+  }
+}
+
+@media (max-width: 900px) {
+  .inventory-mobile-list {
+    display: grid;
+  }
+  .inventory-table {
+    display: none;
+  }
+}
