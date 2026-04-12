@@ -1,12 +1,11 @@
 // src/pages/ReportsPage.jsx  (BRANCH APP)
-// Schema columns:
-//   sales: product_name, quantity, unit_price, total_amount, profit, created_at
-//   products: name, category, sell_price, buy_price, quantity, alert_qty
+// All financial figures (revenue, profit, margin, cost) are gated behind isAdmin.
+// Branch managers see operational metrics: units, transactions, stock counts, averages.
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { fmtKES, fmtDateShort, stockStatus } from '../lib/utils';
+import { fmtKES, stockStatus } from '../lib/utils';
 import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/reports.css';
 
@@ -27,9 +26,9 @@ function periodStart(period) {
     d.setDate(d.getDate() - d.getDay()); d.setHours(0,0,0,0); return d.toISOString();
   }
   if (period === 'month') {
-    const d = new Date(now.getFullYear(), now.getMonth(), 1); return d.toISOString();
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
   }
-  return null; // all time
+  return null;
 }
 
 export default function ReportsPage() {
@@ -40,10 +39,7 @@ export default function ReportsPage() {
   const [period,   setPeriod]   = useState('today');
 
   const fetchData = useCallback(async () => {
-    if (!shopId) {
-      setLoading(false);
-      return;
-    }
+    if (!shopId) { setLoading(false); return; }
     setLoading(true);
     const [salesRes, prodRes] = await Promise.all([
       supabase
@@ -68,18 +64,16 @@ export default function ReportsPage() {
 
   // ---- Filter sales by period ----
   const start = periodStart(period);
-  const periodSales = start
-    ? sales.filter(s => s.created_at >= start)
-    : sales;
+  const periodSales = start ? sales.filter(s => s.created_at >= start) : sales;
 
   // ---- Key metrics ----
-  const revenue     = periodSales.reduce((a, s) => a + Number(s.total_amount || 0), 0);
-  const profit      = periodSales.reduce((a, s) => a + Number(s.profit       || 0), 0);
-  const unitsSold   = periodSales.reduce((a, s) => a + (s.quantity           || 0), 0);
-  const txnCount    = periodSales.length;
-  const margin      = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
-  const avgSale     = txnCount > 0 ? revenue / txnCount : 0;
-  const avgProfit   = txnCount > 0 ? profit  / txnCount : 0;
+  const revenue   = periodSales.reduce((a, s) => a + Number(s.total_amount || 0), 0);
+  const profit    = periodSales.reduce((a, s) => a + Number(s.profit       || 0), 0);
+  const unitsSold = periodSales.reduce((a, s) => a + (s.quantity           || 0), 0);
+  const txnCount  = periodSales.length;
+  const profitPct = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
+  const avgSale   = txnCount > 0 ? revenue / txnCount : 0;
+  const avgProfit = txnCount > 0 ? profit  / txnCount : 0;
 
   // ---- Category breakdown ----
   const catMap = {};
@@ -91,7 +85,10 @@ export default function ReportsPage() {
     catMap[cat].profit += Number(s.profit       || 0);
     catMap[cat].units  += s.quantity || 0;
   });
-  const catRows   = Object.entries(catMap).sort((a,b) => isAdmin ? b[1].rev - a[1].rev : b[1].units - a[1].units);
+  // Sort: admin by revenue, manager by units
+  const catRows   = Object.entries(catMap).sort((a, b) =>
+    isAdmin ? b[1].rev - a[1].rev : b[1].units - a[1].units
+  );
   const maxCatVal = catRows.length ? catRows[0][1][isAdmin ? 'rev' : 'units'] : 1;
 
   // ---- Top products ----
@@ -103,16 +100,18 @@ export default function ReportsPage() {
     prodMap[k].profit += Number(s.profit       || 0);
     prodMap[k].units  += s.quantity || 0;
   });
-  const topProducts = Object.entries(prodMap).sort((a,b) => isAdmin ? b[1].rev - a[1].rev : b[1].units - a[1].units).slice(0, 8);
+  const topProducts = Object.entries(prodMap)
+    .sort((a, b) => isAdmin ? b[1].rev - a[1].rev : b[1].units - a[1].units)
+    .slice(0, 8);
   const topCategory = catRows.length ? { cat: catRows[0][0], units: catRows[0][1].units } : null;
 
-  // ---- Daily revenue for mini bar chart (last 7 days) ----
+  // ---- Daily revenue for mini bar chart (last 7 days — always based on sales volume) ----
   const dayMap = {};
   for (let i = 6; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const key = d.toLocaleDateString('en-KE', { weekday: 'short' });
-    dayMap[key] = 0;
+    dayMap[key] = { rev: 0, units: 0 };
   }
   sales.forEach(s => {
     const d = new Date(s.created_at);
@@ -120,19 +119,25 @@ export default function ReportsPage() {
     const diffDays = Math.floor((now - d) / 86400000);
     if (diffDays <= 6) {
       const key = d.toLocaleDateString('en-KE', { weekday: 'short' });
-      if (key in dayMap) dayMap[key] += Number(s.total_amount || 0);
+      if (key in dayMap) {
+        dayMap[key].rev   += Number(s.total_amount || 0);
+        dayMap[key].units += s.quantity || 0;
+      }
     }
   });
   const dayEntries = Object.entries(dayMap);
-  const maxDay = Math.max(...dayEntries.map(e => e[1]), 1);
+  // Chart value: revenue for admin, units for manager
+  const dayVals = dayEntries.map(([, v]) => isAdmin ? v.rev : v.units);
+  const maxDay  = Math.max(...dayVals, 1);
 
   // ---- Low stock / OOS ----
   const lowStock = products.filter(p => (p.quantity || 0) > 0 && (p.quantity || 0) <= (p.alert_qty || 5));
   const oos      = products.filter(p => (p.quantity || 0) === 0);
 
-  // ---- Stock value ----
-  const stockValue  = products.reduce((a, p) => a + (p.sell_price || 0) * (p.quantity || 0), 0);
-  const stockCost   = products.reduce((a, p) => a + (p.buy_price  || 0) * (p.quantity || 0), 0);
+  // ---- Stock value (admin only) ----
+  const stockValue = products.reduce((a, p) => a + (p.sell_price || 0) * (p.quantity || 0), 0);
+  const stockCost  = products.reduce((a, p) => a + (p.buy_price  || 0) * (p.quantity || 0), 0);
+  const totalUnits = products.reduce((a, p) => a + (p.quantity   || 0), 0);
 
   if (loading) return (
     <div className="rep-loading"><div className="spinner"/><span>Loading reports…</span></div>
@@ -143,16 +148,16 @@ export default function ReportsPage() {
 
       {/* ---- PERIOD SELECTOR ---- */}
       <div className="rep-period-bar mb-md">
-      <div className="rep-period-group">
-        {PERIODS.map(p => (
-          <button
-            key={p.value}
-            className={`rep-period-btn ${period === p.value ? 'active' : ''}`}
-            onClick={() => setPeriod(p.value)}
-          >
-            {p.label}
-          </button>
-        ))}
+        <div className="rep-period-group">
+          {PERIODS.map(p => (
+            <button
+              key={p.value}
+              className={`rep-period-btn ${period === p.value ? 'active' : ''}`}
+              onClick={() => setPeriod(p.value)}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
         <button className="btn btn-ghost btn-sm" style={{ marginLeft: 'auto' }} onClick={fetchData}>
           Refresh
@@ -171,7 +176,7 @@ export default function ReportsPage() {
             <div className="metric-card metric-brand">
               <div className="metric-label">Profit</div>
               <div className="metric-value" style={{ color: 'var(--brand)' }}>{fmtKES(profit)}</div>
-              <div className="metric-sub up">{margin}% margin</div>
+              <div className="metric-sub up">{profitPct}% margin</div>
             </div>
             <div className="metric-card">
               <div className="metric-label">Units Sold</div>
@@ -189,7 +194,7 @@ export default function ReportsPage() {
             <div className="metric-card metric-brand">
               <div className="metric-label">Transactions</div>
               <div className="metric-value">{txnCount}</div>
-              <div className="metric-sub up">{fmtKES(revenue)} total</div>
+              <div className="metric-sub up">{unitsSold} units sold</div>
             </div>
             <div className="metric-card metric-brand">
               <div className="metric-label">Units Sold</div>
@@ -197,30 +202,37 @@ export default function ReportsPage() {
               <div className="metric-sub">{txnCount} transactions</div>
             </div>
             <div className="metric-card">
-              <div className="metric-label">Avg Sale</div>
-              <div className="metric-value">{fmtKES(Math.round(avgSale))}</div>
-              <div className="metric-sub">per transaction</div>
+              <div className="metric-label">Avg Units / Sale</div>
+              <div className="metric-value">
+                {txnCount > 0 ? (unitsSold / txnCount).toFixed(1) : '0'}
+              </div>
+              <div className="metric-sub">units per transaction</div>
             </div>
             <div className="metric-card">
               <div className="metric-label">Top Category</div>
-              <div className="metric-value">{topCategory ? topCategory.cat : '—'}</div>
+              <div className="metric-value" style={{ fontSize: 16, letterSpacing: '-.01em' }}>
+                {topCategory ? topCategory.cat : '—'}
+              </div>
               <div className="metric-sub">{topCategory ? `${topCategory.units} units` : 'No data'}</div>
             </div>
           </>
         )}
       </div>
 
-      {/* ---- REVENUE CHART + CATEGORY BREAKDOWN ---- */}
+      {/* ---- CHART + CATEGORY BREAKDOWN ---- */}
       <div className="grid-2 mb-md">
 
-        {/* 7-day bar chart */}
+        {/* Bar chart */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">{isAdmin ? 'Revenue' : 'Sales'} — last 7 days</span>
+            <span className="card-title">
+              {isAdmin ? 'Revenue' : 'Units sold'} — last 7 days
+            </span>
           </div>
           <div className="rep-chart">
-            {dayEntries.map(([day, val]) => {
-              const pct = Math.round((val / maxDay) * 100);
+            {dayEntries.map(([day, vals]) => {
+              const val     = isAdmin ? vals.rev : vals.units;
+              const pct     = Math.round((val / maxDay) * 100);
               const isToday = day === new Date().toLocaleDateString('en-KE', { weekday: 'short' });
               return (
                 <div key={day} className="rep-bar-col">
@@ -228,13 +240,15 @@ export default function ReportsPage() {
                     <div
                       className={`rep-bar ${isToday ? 'today' : ''}`}
                       style={{ height: `${Math.max(pct, val > 0 ? 4 : 0)}%` }}
-                      title={fmtKES(val)}
+                      title={isAdmin ? fmtKES(val) : `${val} units`}
                     />
                   </div>
                   <div className="rep-bar-label">{day}</div>
                   {val > 0 && (
                     <div className="rep-bar-val">
-                      {val >= 1000 ? `${(val/1000).toFixed(1)}k` : val}
+                      {isAdmin
+                        ? (val >= 1000 ? `${(val / 1000).toFixed(1)}k` : val)
+                        : val}
                     </div>
                   )}
                 </div>
@@ -257,12 +271,18 @@ export default function ReportsPage() {
                 <div key={cat} className="rep-cat-row">
                   <div className="rep-cat-header">
                     <span className="rep-cat-name">{cat}</span>
-                    <span className="rep-cat-rev">{isAdmin ? fmtKES(d.rev) : `${d.units} units`}</span>
+                    <span className="rep-cat-rev">
+                      {isAdmin ? fmtKES(d.rev) : `${d.units} units`}
+                    </span>
                   </div>
                   <div className="rep-bar-track">
                     <div
                       className="rep-bar-fill"
-                      style={{ width: `${Math.round((d[isAdmin ? 'rev' : 'units'] / maxCatVal) * 100)}%` }}
+                      style={{
+                        width: `${Math.round(
+                          (d[isAdmin ? 'rev' : 'units'] / maxCatVal) * 100
+                        )}%`,
+                      }}
                     />
                   </div>
                   <div className="rep-cat-sub">
@@ -292,7 +312,7 @@ export default function ReportsPage() {
           <div className="empty-state"><p>No sales in this period.</p></div>
         ) : (
           <>
-            {/* Mobile */}
+            {/* Mobile cards */}
             <div className="rep-top-mobile">
               {topProducts.map(([name, d], i) => (
                 <div key={name} className="rep-top-card">
@@ -304,12 +324,14 @@ export default function ReportsPage() {
                       {isAdmin && <span className="rep-top-profit">+{fmtKES(d.profit)} profit</span>}
                     </div>
                   </div>
-                  <div className="rep-top-rev">{isAdmin ? fmtKES(d.rev) : `${d.units} units`}</div>
+                  <div className="rep-top-rev">
+                    {isAdmin ? fmtKES(d.rev) : `${d.units} units`}
+                  </div>
                 </div>
               ))}
             </div>
 
-            {/* Desktop */}
+            {/* Desktop table */}
             <div className="table-wrap rep-top-desktop">
               <table className="data-table">
                 <thead>
@@ -330,15 +352,21 @@ export default function ReportsPage() {
                         <td style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{i + 1}</td>
                         <td style={{ fontWeight: 500 }}>{name}</td>
                         {isAdmin && <td style={{ fontWeight: 600 }}>{fmtKES(d.rev)}</td>}
-                        {isAdmin && <td style={{ color: 'var(--brand)', fontWeight: 600 }}>{fmtKES(d.profit)}</td>}
-                        {isAdmin && <td>
-                          <span style={{
-                            fontSize: 12, fontWeight: 600,
-                            color: prodMargin >= 20 ? 'var(--brand)' : prodMargin > 0 ? 'var(--amber)' : 'var(--red)',
-                          }}>
-                            {prodMargin}%
-                          </span>
-                        </td>}
+                        {isAdmin && (
+                          <td style={{ color: 'var(--brand)', fontWeight: 600 }}>
+                            {fmtKES(d.profit)}
+                          </td>
+                        )}
+                        {isAdmin && (
+                          <td>
+                            <span style={{
+                              fontSize: 12, fontWeight: 600,
+                              color: prodMargin >= 20 ? 'var(--brand)' : prodMargin > 0 ? 'var(--amber)' : 'var(--red)',
+                            }}>
+                              {prodMargin}%
+                            </span>
+                          </td>
+                        )}
                         <td>{d.units}</td>
                       </tr>
                     );
@@ -379,20 +407,18 @@ export default function ReportsPage() {
                 </div>
                 <div className="rep-stock-item">
                   <div className="metric-label">Total units</div>
-                  <div className="rep-stock-val">
-                    {products.reduce((a, p) => a + (p.quantity || 0), 0)}
-                  </div>
+                  <div className="rep-stock-val">{totalUnits}</div>
                   <div className="metric-sub">in stock</div>
                 </div>
                 <div className="rep-stock-item">
                   <div className="metric-label">Low stock</div>
                   <div className="rep-stock-val">{lowStock.length}</div>
-                  <div className="metric-sub">items need restock</div>
+                  <div className="metric-sub">need restock</div>
                 </div>
                 <div className="rep-stock-item">
                   <div className="metric-label">Out of stock</div>
                   <div className="rep-stock-val">{oos.length}</div>
-                  <div className="metric-sub">items unavailable</div>
+                  <div className="metric-sub">unavailable</div>
                 </div>
               </>
             )}

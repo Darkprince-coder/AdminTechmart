@@ -1,6 +1,6 @@
-// src/pages/DashboardPage.jsx  (BRANCH APP — correct schema columns)
-// products: quantity, alert_qty, buy_price, sell_price
-// sales:    total_amount, profit, product_name, customer_name
+// src/pages/DashboardPage.jsx  (BRANCH APP)
+// Fix: non-admin metric sub-text was exposing todayRev (revenue figure).
+//      Now shows transaction count only for branch managers.
 
 import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -14,18 +14,14 @@ function DashboardSkeleton() {
     <div className="dash-page-skeleton" aria-busy="true">
       <span className="sr-only">Loading branch dashboard</span>
       <div className="dash-sk-metrics" aria-hidden>
-        {[1, 2, 3, 4].map(k => (
-          <div key={k} className="dash-sk-card" />
-        ))}
+        {[1, 2, 3, 4].map(k => <div key={k} className="dash-sk-card" />)}
       </div>
       <div className="dash-sk-row" aria-hidden>
         <div className="dash-sk-block dash-sk-block--tall" />
         <div className="dash-sk-block" />
       </div>
       <div className="dash-sk-list" aria-hidden>
-        {[1, 2, 3].map(k => (
-          <div key={k} className="dash-sk-line" />
-        ))}
+        {[1, 2, 3].map(k => <div key={k} className="dash-sk-line" />)}
       </div>
     </div>
   );
@@ -73,7 +69,6 @@ export default function DashboardPage({ onNavigate }) {
   useEffect(() => { load(); }, [load]);
 
   if (!shopId) return <NoShopAssigned />;
-
   if (loading) return <DashboardSkeleton />;
 
   if (loadError || !data) return (
@@ -96,6 +91,7 @@ export default function DashboardPage({ onNavigate }) {
 
   // Stock
   const totalStockVal = products.reduce((a, p) => a + (p.sell_price || 0) * (p.quantity || 0), 0);
+  const totalUnits    = products.reduce((a, p) => a + (p.quantity || 0), 0);
   const lowItems      = products.filter(p => (p.quantity || 0) > 0 && (p.quantity || 0) <= (p.alert_qty || 5));
   const oosItems      = products.filter(p => (p.quantity || 0) === 0);
   const alertCount    = lowItems.length + oosItems.length;
@@ -103,23 +99,18 @@ export default function DashboardPage({ onNavigate }) {
     ...oosItems.map(p => ({ ...p, status: 'oos' })),
     ...lowItems.map(p => ({ ...p, status: 'low' })),
   ];
-  const alertPreview  = alertItems.slice(0, 4);
+  const alertPreview = alertItems.slice(0, 4);
 
-  // Top sellers (all time)
-  const prodRevMap = {};
-  sales.forEach(s => {
-    const k = s.product_name || 'Unknown';
-    prodRevMap[k] = (prodRevMap[k] || 0) + Number(s.total_amount || 0);
-  });
-  const topSellers  = Object.entries(prodRevMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
-
-  // Top by units (for managers)
+  // Top sellers — admin by revenue, manager by units
+  const prodRevMap  = {};
   const prodUnitMap = {};
   sales.forEach(s => {
     const k = s.product_name || 'Unknown';
+    prodRevMap[k]  = (prodRevMap[k]  || 0) + Number(s.total_amount || 0);
     prodUnitMap[k] = (prodUnitMap[k] || 0) + Number(s.quantity || 0);
   });
-  const topByUnits  = Object.entries(prodUnitMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const topSellers = Object.entries(prodRevMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const topByUnits = Object.entries(prodUnitMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   const recentSales = sales.slice(0, 5);
 
@@ -150,31 +141,34 @@ export default function DashboardPage({ onNavigate }) {
               <div className="metric-label">Stock Value</div>
               <div className="metric-value">{fmtKES(totalStockVal)}</div>
               <div className="metric-sub">
-                {products.reduce((a, p) => a + (p.quantity || 0), 0)} units · {products.length} SKUs
+                {totalUnits} units · {products.length} SKUs
               </div>
             </div>
           </>
         ) : (
           <>
+            {/* FIX: was showing fmtKES(todayRev) in sub-text — now shows operational count */}
             <div className="metric-card metric-brand">
               <div className="metric-label">Today's Transactions</div>
               <div className="metric-value">{todaySales.length}</div>
               <div className="metric-sub up">
-                {fmtKES(todayRev)} total sales
+                {todaySales.length === 1 ? '1 sale' : `${todaySales.length} sales`} today
               </div>
             </div>
             <div className="metric-card metric-brand">
               <div className="metric-label">Units Sold Today</div>
               <div className="metric-value" style={{ color: 'var(--brand)' }}>
-                {todaySales.reduce((a, s) => a + Number(s.quantity || 0), 0)}
+                {todayUnits}
               </div>
-              <div className="metric-sub up">Across {todaySales.length} sales</div>
+              <div className="metric-sub up">
+                across {todaySales.length} sale{todaySales.length !== 1 ? 's' : ''}
+              </div>
             </div>
             <div className="metric-card metric-blue">
               <div className="metric-label">Total Stock</div>
-              <div className="metric-value">{products.reduce((a, p) => a + (p.quantity || 0), 0)}</div>
+              <div className="metric-value">{totalUnits}</div>
               <div className="metric-sub">
-                {products.length} products · {oosItems.length + lowItems.length} alerts
+                {products.length} products · {alertCount} alert{alertCount !== 1 ? 's' : ''}
               </div>
             </div>
           </>
@@ -186,7 +180,7 @@ export default function DashboardPage({ onNavigate }) {
               : lowItems.length > 0 ? 'var(--amber)'
               : 'var(--brand)',
           }}>
-            {oosItems.length + lowItems.length}
+            {alertCount}
           </div>
           <div className={`metric-sub ${oosItems.length > 0 ? 'danger' : lowItems.length > 0 ? 'warn' : 'up'}`}>
             {oosItems.length > 0 ? `${oosItems.length} out of stock`
@@ -196,7 +190,7 @@ export default function DashboardPage({ onNavigate }) {
         </div>
       </div>
 
-      {/* ---- STOCK ALERTS + TOP SELLERS (IMPROVED HIERARCHY) ---- */}
+      {/* ---- STOCK ALERTS + TOP SELLERS ---- */}
       <div className="grid-2 mb-md">
         <div>
           {alertCount > 0 ? (
@@ -230,9 +224,7 @@ export default function DashboardPage({ onNavigate }) {
                         <div className="dash-stock-name">{p.name}</div>
                         <div className="dash-stock-meta">
                           {p.category || 'Uncategorized'}
-                          {p.status === 'low' && (
-                            <> · alert at {p.alert_qty || 5}</>
-                          )}
+                          {p.status === 'low' && <> · alert at {p.alert_qty || 5}</>}
                         </div>
                       </div>
                     </div>
@@ -275,8 +267,7 @@ export default function DashboardPage({ onNavigate }) {
           {(isAdmin ? topSellers : topByUnits).length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <line x1="18" y1="20" x2="18" y2="10"/>
                   <line x1="12" y1="20" x2="12" y2="4"/>
                   <line x1="6"  y1="20" x2="6"  y2="14"/>
@@ -298,7 +289,9 @@ export default function DashboardPage({ onNavigate }) {
                     <div className="dash-top-bar-wrap">
                       <div className="dash-top-bar" style={{ width: `${pct}%` }}/>
                     </div>
-                    <span className="dash-top-rev">{isAdmin ? fmtKES(val) : `${val} units`}</span>
+                    <span className="dash-top-rev">
+                      {isAdmin ? fmtKES(val) : `${val} units`}
+                    </span>
                   </div>
                 );
               })}
@@ -319,8 +312,7 @@ export default function DashboardPage({ onNavigate }) {
           {recentSales.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
                   <line x1="3" y1="6" x2="21" y2="6"/>
                 </svg>
@@ -335,14 +327,13 @@ export default function DashboardPage({ onNavigate }) {
                     {(s.product_name || '?').charAt(0).toUpperCase()}
                   </div>
                   <div className="dash-sale-info">
-                    <div className="dash-sale-name">
-                      {s.product_name || 'Unknown product'}
-                    </div>
+                    <div className="dash-sale-name">{s.product_name || 'Unknown product'}</div>
                     <div className="dash-sale-meta">
                       {s.customer_name || 'Walk-in'} · {s.quantity} unit{s.quantity !== 1 ? 's' : ''}
                     </div>
                   </div>
                   <div className="dash-sale-right">
+                    {/* total_amount = what customer paid — OK for managers to see */}
                     <div className="dash-sale-amount">{fmtKES(s.total_amount)}</div>
                     <div className="dash-sale-time">{fmtTime(s.created_at)}</div>
                   </div>
@@ -352,6 +343,7 @@ export default function DashboardPage({ onNavigate }) {
           )}
         </div>
       </div>
+
       <div className="grid-2">
         <div className="card">
           <div className="card-header">
@@ -361,7 +353,7 @@ export default function DashboardPage({ onNavigate }) {
             {[
               { label: 'Units sold',      value: todayUnits },
               { label: 'Transactions',    value: todaySales.length },
-              { label: 'Avg per sale',    value: todaySales.length ? fmtKES(Math.round(todayRev    / todaySales.length)) : 'KSh 0' },
+              { label: 'Avg per sale',    value: todaySales.length ? fmtKES(Math.round(todayRev / todaySales.length)) : 'KSh 0' },
               ...(isAdmin ? [{ label: 'Avg profit/sale', value: todaySales.length ? fmtKES(Math.round(todayProfit / todaySales.length)) : 'KSh 0' }] : []),
             ].map(item => (
               <div key={item.label} className="dash-today-stat">
@@ -387,7 +379,7 @@ export default function DashboardPage({ onNavigate }) {
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
               },
               {
-                label: 'View reports', sub: 'Revenue and profit analysis', page: 'reports',
+                label: 'View reports', sub: 'Units and stock analysis', page: 'reports',
                 icon: <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
               },
             ].map(item => (

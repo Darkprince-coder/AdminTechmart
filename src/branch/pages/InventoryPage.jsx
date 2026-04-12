@@ -520,7 +520,7 @@ export default function InventoryPage() {
           })}
         </div>
 
-        {!showForm && (
+       {/*  {!showForm && (
           <button className="btn btn-primary btn-sm" onClick={openAdd}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="2.5">
@@ -529,7 +529,7 @@ export default function InventoryPage() {
             </svg>
             Add product
           </button>
-        )}
+        )} */}
       </div>
 
       {/* ---- PRODUCT LIST ---- */}

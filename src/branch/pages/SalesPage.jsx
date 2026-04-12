@@ -1,8 +1,7 @@
-// src/pages/SalesPage.jsx  (BRANCH APP — bug fixes)
+// src/pages/SalesPage.jsx  (BRANCH APP)
 // Fixes:
-// 1. Delete: optimistically removes record from local state immediately
-//    so it disappears instantly without waiting for a full re-fetch
-// 2. Added 'deleting' state so button shows "Deleting…" instead of freezing
+// 1. SaleCard was showing profit to non-admin (manager) users — now gated by isAdmin
+// 2. isAdmin prop passed down to SaleCard from the render site
 // 3. fetchSales no longer sets loading=true on refresh (only on first load)
 //    so the list doesn't flash a spinner after every record/delete action
 
@@ -30,9 +29,9 @@ export default function SalesPage({ onNavigate }) {
 
   const [sales,         setSales]         = useState([]);
   const [products,      setProducts]      = useState([]);
-  const [loading,       setLoading]       = useState(true);   // only true on first load
+  const [loading,       setLoading]       = useState(true);
   const [saving,        setSaving]        = useState(false);
-  const [deleting,      setDeleting]      = useState(false);  // FIX: loading state for delete
+  const [deleting,      setDeleting]      = useState(false);
   const [form,          setForm]          = useState(EMPTY_FORM);
   const [search,        setSearch]        = useState('');
   const [filterToday,   setFilterToday]   = useState(false);
@@ -108,9 +107,7 @@ export default function SalesPage({ onNavigate }) {
   // ---- Refresh products when page becomes visible ----
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        refreshProductsData();
-      }
+      if (document.visibilityState === 'visible') refreshProductsData();
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
@@ -121,8 +118,8 @@ export default function SalesPage({ onNavigate }) {
   // ---- Record sale ----
   const handleRecord = async () => {
     const { product_id, quantity, unit_price, customer_name } = form;
-    if (!product_id)                    return toastRef.current.error('Select a product');
-    if (!quantity || +quantity < 1)     return toastRef.current.error('Quantity must be at least 1');
+    if (!product_id)                     return toastRef.current.error('Select a product');
+    if (!quantity || +quantity < 1)      return toastRef.current.error('Quantity must be at least 1');
     if (!unit_price || +unit_price <= 0) return toastRef.current.error('Enter a valid price');
 
     const product = products.find(p => p.id === product_id);
@@ -132,7 +129,6 @@ export default function SalesPage({ onNavigate }) {
 
     setSaving(true);
 
-    // Decrement stock
     const { error: stockErr } = await supabase
       .from('products')
       .update({ quantity: product.quantity - +quantity })
@@ -144,94 +140,81 @@ export default function SalesPage({ onNavigate }) {
       return;
     }
 
-    // Record sale
     const { data: newSale, error: saleErr } = await supabase
-      .from('sales')
-      .insert({
-        shop_id:       shopId,
-        product_id,
-        product_name:  product.name,
-        customer_name: customer_name.trim() || 'Walk-in',
-        quantity:      +quantity,
-        unit_price:    +unit_price,
-        buy_price:     product.buy_price,
-      })
+  .from('sales')
+  .insert({
+    shop_id:       shopId,
+    product_id,
+    product_name:  product.name,
+    customer_name: customer_name.trim() || 'Walk-in',
+    quantity:      +quantity,
+    unit_price:    +unit_price,
+    buy_price:     product.buy_price,
+    total_amount:  +unit_price * +quantity,                          // ✅ ADD THIS
+    profit:        (+unit_price - product.buy_price) * +quantity,   // ✅ ADD THIS
+  })
       .select('id, product_name, customer_name, quantity, unit_price, buy_price, total_amount, profit, created_at')
       .single();
 
     if (saleErr) {
-      // Roll back stock
       await supabase.from('products').update({ quantity: product.quantity }).eq('id', product_id);
       toastRef.current.error('Sale record failed: ' + saleErr.message);
     } else {
-      const profit = (+unit_price - product.buy_price) * +quantity;
-      toastRef.current.success(`Sale recorded — Profit: ${fmtKES(profit)}`);
-      // Optimistically prepend the new sale to state
+      toastRef.current.success(`Sale recorded — ${fmtKES(+unit_price * +quantity)}`);
       if (newSale) setSales(prev => [newSale, ...prev]);
       setForm(f => ({ ...f, quantity: '1', customer_name: '' }));
-      // Refresh products list (stock changed)
       fetchProducts();
     }
     setSaving(false);
   };
 
-// ---- Delete sale ----
-// FIX: optimistic removal + deleting state + awaited properly
-const handleDeleteSale = async () => {
-  if (!deleteConfirm) return;
-  setDeleting(true);
-  // Restore stock — find product by name in this shop
-  const { data: prod } = await supabase
-    .from('products')
-    .select('id, quantity')
-    .eq('shop_id', shopId)
-    .eq('name', deleteConfirm.product_name)
-    .maybeSingle();
+  // ---- Delete sale ----
+  const handleDeleteSale = async () => {
+    if (!deleteConfirm) return;
+    setDeleting(true);
 
-  if (prod) {
-    await supabase
+    const { data: prod } = await supabase
       .from('products')
-      .update({ quantity: prod.quantity + deleteConfirm.quantity })
-      .eq('id', prod.id);
-  }
+      .select('id, quantity')
+      .eq('shop_id', shopId)
+      .eq('name', deleteConfirm.product_name)
+      .maybeSingle();
 
-  // Delete the sale record
-  const { error } = await supabase
-    .from('sales')
-    .delete()
-    .eq('id', deleteConfirm.id);
-
-  if (error) {
-    toastRef.current.error('Delete failed: ' + error.message);
-    // Roll back stock restore on failure
     if (prod) {
-      await supabase.from('products')
-        .update({ quantity: prod.quantity })
+      await supabase
+        .from('products')
+        .update({ quantity: prod.quantity + deleteConfirm.quantity })
         .eq('id', prod.id);
     }
-  } else {
-    // FIX: immediately remove from local state — no waiting for re-fetch
-    setSales(prev => prev.filter(s => s.id !== deleteConfirm.id));
-    toastRef.current.success('Sale deleted and stock restored');
-    insertAuditLog({
-      action: 'sale_delete',
-      entityType: 'sale',
-      entityId: deleteConfirm.id,
-      metadata: {
-        portal: 'branch',
-        shop_id: shopId,
-        product_name: deleteConfirm.product_name,
-        quantity: deleteConfirm.quantity,
-        total_amount: deleteConfirm.total_amount,
-      },
-    });
-    // Refresh products in background so stock shows correctly
-    fetchProducts();
-  }
 
-  setDeleting(false);
-  setDeleteConfirm(null);
-};
+    const { error } = await supabase.from('sales').delete().eq('id', deleteConfirm.id);
+
+    if (error) {
+      toastRef.current.error('Delete failed: ' + error.message);
+      if (prod) {
+        await supabase.from('products').update({ quantity: prod.quantity }).eq('id', prod.id);
+      }
+    } else {
+      setSales(prev => prev.filter(s => s.id !== deleteConfirm.id));
+      toastRef.current.success('Sale deleted and stock restored');
+      insertAuditLog({
+        action: 'sale_delete',
+        entityType: 'sale',
+        entityId: deleteConfirm.id,
+        metadata: {
+          portal: 'branch',
+          shop_id: shopId,
+          product_name: deleteConfirm.product_name,
+          quantity: deleteConfirm.quantity,
+          total_amount: deleteConfirm.total_amount,
+        },
+      });
+      fetchProducts();
+    }
+
+    setDeleting(false);
+    setDeleteConfirm(null);
+  };
 
   if (!shopId) return <NoShopAssigned />;
 
@@ -294,7 +277,7 @@ const handleDeleteSale = async () => {
             <div className="metric-card metric-brand">
               <div className="metric-label">Units Sold Today</div>
               <div className="metric-value">{todayUnits}</div>
-              <div className="metric-sub up">{todaySales.length} transactions</div>
+              <div className="metric-sub up">{todaySales.length} transaction{todaySales.length !== 1 ? 's' : ''}</div>
             </div>
             <div className="metric-card metric-brand">
               <div className="metric-label">Today's Sales</div>
@@ -429,9 +412,7 @@ const handleDeleteSale = async () => {
               <button type="button" className="btn btn-primary btn-full" onClick={handleRecord}
                 disabled={saving || !form.product_id}>
                 {saving ? (
-                  <>
-                    <span className="spinner spinner-sm" /> Processing…
-                  </>
+                  <><span className="spinner spinner-sm" /> Processing…</>
                 ) : (
                   'Record sale'
                 )}
@@ -449,12 +430,12 @@ const handleDeleteSale = async () => {
           <div className="sales-summary-stats">
             {[
               ...(isAdmin ? [
-                { label: 'Revenue',      val: fmtKES(todayRev),                        color: 'var(--text-primary)' },
-                { label: 'Profit',       val: fmtKES(todayProfit),                     color: 'var(--brand)' },
-                { label: 'Margin',       val: `${todayMargin}%`,                        color: 'var(--text-primary)' },
+                { label: 'Revenue',      val: fmtKES(todayRev),    color: 'var(--text-primary)' },
+                { label: 'Profit',       val: fmtKES(todayProfit), color: 'var(--brand)' },
+                { label: 'Margin',       val: `${todayMargin}%`,   color: 'var(--text-primary)' },
               ] : []),
-              { label: 'Units sold',   val: todayUnits,                               color: 'var(--text-primary)' },
-              { label: 'Transactions', val: todaySales.length,                       color: 'var(--text-primary)' },
+              { label: 'Units sold',   val: todayUnits,            color: 'var(--text-primary)' },
+              { label: 'Transactions', val: todaySales.length,     color: 'var(--text-primary)' },
             ].map(item => (
               <div key={item.label} className="sales-stat-block">
                 <div className="metric-label">{item.label}</div>
@@ -498,7 +479,7 @@ const handleDeleteSale = async () => {
             </>
           )}
           {todaySales.length === 0 && (
-            <div className="empty-state" style={{ padding: '20px 0 0' }}>
+            <div className="empty-state" style={{ padding: '20px 0' }}>
               <p>No sales recorded today yet.</p>
             </div>
           )}
@@ -522,8 +503,7 @@ const handleDeleteSale = async () => {
             >
               {filterToday ? 'Today only' : 'All sales'}
             </button>
-            <button className="btn btn-ghost btn-sm"
-              onClick={() => fetchSales(false)}>
+            <button className="btn btn-ghost btn-sm" onClick={() => fetchSales(false)}>
               Refresh
             </button>
           </div>
@@ -562,11 +542,12 @@ const handleDeleteSale = async () => {
           </div>
         ) : (
           <>
-            {/* Mobile cards */}
+            {/* Mobile cards — FIX: pass isAdmin so profit is hidden for managers */}
             <div className="sales-mobile-list">
               {visible.map((s, i) => (
                 <SaleCard key={s.id} sale={s} index={visible.length - i}
-                  onDelete={() => setDeleteConfirm(s)} />
+                  onDelete={() => setDeleteConfirm(s)}
+                  isAdmin={isAdmin} />
               ))}
             </div>
 
@@ -611,7 +592,7 @@ const handleDeleteSale = async () => {
 
     </div>
 
-      {/* ---- DELETE CONFIRM (outside .fade-up so position:fixed is viewport-relative) ---- */}
+      {/* ---- DELETE CONFIRM ---- */}
       {deleteConfirm && (
         <div className="overlay-bg" onClick={() => !deleting && setDeleteConfirm(null)}>
           <div className="overlay-card" onClick={e => e.stopPropagation()}>
@@ -641,7 +622,8 @@ const handleDeleteSale = async () => {
   );
 }
 
-function SaleCard({ sale: s, index, onDelete }) {
+// ---- FIX: isAdmin prop added — profit only visible to admin users ----
+function SaleCard({ sale: s, index, onDelete, isAdmin }) {
   return (
     <div className="sale-card">
       <div className="sale-card-header">
@@ -653,7 +635,9 @@ function SaleCard({ sale: s, index, onDelete }) {
         </div>
         <div style={{ textAlign:'right', flexShrink:0 }}>
           <div className="sale-card-total">{fmtKES(s.total_amount)}</div>
-          <div className="sale-card-profit">+{fmtKES(s.profit)} profit</div>
+          {isAdmin && (
+            <div className="sale-card-profit">+{fmtKES(s.profit)} profit</div>
+          )}
         </div>
       </div>
       <div className="sale-card-footer">
