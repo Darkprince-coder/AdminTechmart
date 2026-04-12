@@ -23,7 +23,7 @@ const EMPTY_FORM = {
 };
 
 export default function SalesPage({ onNavigate }) {
-  const { shopId } = useAuth();
+  const { shopId, isAdmin } = useAuth();
   const toast = useToast();
   const toastRef = useRef(toast);
   toastRef.current = toast;
@@ -92,6 +92,29 @@ export default function SalesPage({ onNavigate }) {
       return updated;
     });
   };
+
+  // ---- Refresh products data ----
+  const refreshProductsData = useCallback(async () => {
+    if (!shopId) return;
+    const { data } = await supabase
+      .from('products')
+      .select('id, name, sell_price, buy_price, quantity')
+      .eq('shop_id', shopId)
+      .gt('quantity', 0)
+      .order('name');
+    setProducts(data || []);
+  }, [shopId]);
+
+  // ---- Refresh products when page becomes visible ----
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshProductsData();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refreshProductsData]);
 
   const selectedProduct = products.find(p => p.id === form.product_id) || null;
 
@@ -243,26 +266,53 @@ const handleDeleteSale = async () => {
 
       {/* ---- METRICS ---- */}
       <div className="grid-4 mb-md">
-        <div className="metric-card metric-brand">
-          <div className="metric-label">Today's Revenue</div>
-          <div className="metric-value">{fmtKES(todayRev)}</div>
-          <div className="metric-sub up">{todaySales.length} transaction{todaySales.length !== 1 ? 's' : ''}</div>
-        </div>
-        <div className="metric-card metric-brand">
-          <div className="metric-label">Today's Profit</div>
-          <div className="metric-value" style={{ color: 'var(--brand)' }}>{fmtKES(todayProfit)}</div>
-          <div className="metric-sub up">{todayMargin}% margin</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Units Sold Today</div>
-          <div className="metric-value">{todayUnits}</div>
-          <div className="metric-sub">{todaySales.length} transactions</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">All-time Revenue</div>
-          <div className="metric-value">{fmtKES(allRev)}</div>
-          <div className="metric-sub">{sales.length} total sales</div>
-        </div>
+        {isAdmin ? (
+          <>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Today's Revenue</div>
+              <div className="metric-value">{fmtKES(todayRev)}</div>
+              <div className="metric-sub up">{todaySales.length} transaction{todaySales.length !== 1 ? 's' : ''}</div>
+            </div>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Today's Profit</div>
+              <div className="metric-value" style={{ color: 'var(--brand)' }}>{fmtKES(todayProfit)}</div>
+              <div className="metric-sub up">{todayMargin}% margin</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Units Sold Today</div>
+              <div className="metric-value">{todayUnits}</div>
+              <div className="metric-sub">{todaySales.length} transactions</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">All-time Revenue</div>
+              <div className="metric-value">{fmtKES(allRev)}</div>
+              <div className="metric-sub">{sales.length} total sales</div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Units Sold Today</div>
+              <div className="metric-value">{todayUnits}</div>
+              <div className="metric-sub up">{todaySales.length} transactions</div>
+            </div>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Today's Sales</div>
+              <div className="metric-value">{todaySales.length}</div>
+              <div className="metric-sub up">records today</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">All-time sales</div>
+              <div className="metric-value">{sales.length}</div>
+              <div className="metric-sub">records total</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">All-time units</div>
+              <div className="metric-value">{sales.reduce((a, s) => a + (s.quantity || 0), 0)}</div>
+              <div className="metric-sub">sold overall</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ---- RECORD FORM + SUMMARY ---- */}
@@ -308,10 +358,12 @@ const handleDeleteSale = async () => {
                     <span className="metric-label">Standard price</span>
                     <span className="sales-strip-val">{fmtKES(selectedProduct.sell_price)}</span>
                   </div>
-                  <div className="sales-strip-item">
-                    <span className="metric-label">Buy price</span>
-                    <span className="sales-strip-val">{fmtKES(selectedProduct.buy_price)}</span>
-                  </div>
+                  {isAdmin && (
+                    <div className="sales-strip-item">
+                      <span className="metric-label">Buy price</span>
+                      <span className="sales-strip-val">{fmtKES(selectedProduct.buy_price)}</span>
+                    </div>
+                  )}
                   <div className="sales-strip-item">
                     <span className="metric-label">In stock</span>
                     <span className="sales-strip-val"
@@ -353,11 +405,13 @@ const handleDeleteSale = async () => {
                     <span>Total amount</span>
                     <strong>{fmtKES(+form.unit_price * +form.quantity)}</strong>
                   </div>
-                  <div className="sales-preview-row profit">
-                    <span>Expected profit</span>
-                    <strong>{fmtKES((+form.unit_price - selectedProduct.buy_price) * +form.quantity)}</strong>
-                  </div>
-                  {+form.unit_price < selectedProduct.buy_price && (
+                  {isAdmin && (
+                    <div className="sales-preview-row profit">
+                      <span>Expected profit</span>
+                      <strong>{fmtKES((+form.unit_price - selectedProduct.buy_price) * +form.quantity)}</strong>
+                    </div>
+                  )}
+                  {isAdmin && +form.unit_price < selectedProduct.buy_price && (
                     <div className="sales-preview-row loss">
                       <span>Selling below cost — you will make a loss</span>
                     </div>
@@ -394,10 +448,13 @@ const handleDeleteSale = async () => {
           </div>
           <div className="sales-summary-stats">
             {[
-              { label: 'Revenue',      val: fmtKES(todayRev),                        color: 'var(--text-primary)' },
-              { label: 'Profit',       val: fmtKES(todayProfit),                     color: 'var(--brand)' },
+              ...(isAdmin ? [
+                { label: 'Revenue',      val: fmtKES(todayRev),                        color: 'var(--text-primary)' },
+                { label: 'Profit',       val: fmtKES(todayProfit),                     color: 'var(--brand)' },
+                { label: 'Margin',       val: `${todayMargin}%`,                        color: 'var(--text-primary)' },
+              ] : []),
               { label: 'Units sold',   val: todayUnits,                               color: 'var(--text-primary)' },
-              { label: 'Margin',       val: `${todayMargin}%`,                        color: 'var(--text-primary)' },
+              { label: 'Transactions', val: todaySales.length,                       color: 'var(--text-primary)' },
             ].map(item => (
               <div key={item.label} className="sales-stat-block">
                 <div className="metric-label">{item.label}</div>
@@ -424,7 +481,9 @@ const handleDeleteSale = async () => {
                     </div>
                     <div className="sales-recent-amounts">
                       <div className="sales-recent-total">{fmtKES(s.total_amount)}</div>
-                      <div className="sales-recent-profit">+{fmtKES(s.profit)}</div>
+                      {isAdmin && (
+                        <div className="sales-recent-profit">+{fmtKES(s.profit)}</div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -517,7 +576,8 @@ const handleDeleteSale = async () => {
                 <thead>
                   <tr>
                     <th>#</th><th>Product</th><th>Customer</th>
-                    <th>Qty</th><th>Unit price</th><th>Total</th><th>Profit</th>
+                    <th>Qty</th><th>Unit price</th><th>Total</th>
+                    {isAdmin && <th>Profit</th>}
                     <th>Date / Time</th><th style={{ textAlign:'right' }}></th>
                   </tr>
                 </thead>
@@ -530,7 +590,7 @@ const handleDeleteSale = async () => {
                       <td>{s.quantity}</td>
                       <td style={{ fontSize:12 }}>{fmtKES(s.unit_price)}</td>
                       <td style={{ fontWeight:600 }}>{fmtKES(s.total_amount)}</td>
-                      <td style={{ color:'var(--brand)', fontWeight:600 }}>{fmtKES(s.profit)}</td>
+                      {isAdmin && <td style={{ color:'var(--brand)', fontWeight:600 }}>{fmtKES(s.profit)}</td>}
                       <td style={{ fontSize:12, color:'var(--text-secondary)', whiteSpace:'nowrap' }}>
                         {fmtDate(s.created_at)}
                       </td>

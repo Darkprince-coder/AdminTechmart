@@ -96,6 +96,13 @@
 .branch-theme .dash-stock-card {
   display: flex;
   flex-direction: column;
+  max-width: 90%;
+}
+
+@media (min-width: 1200px) {
+  .branch-theme .dash-stock-card {
+    max-width: 550px;
+  }
 }
 
 .branch-theme .dash-stock-card-title {

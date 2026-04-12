@@ -33,7 +33,7 @@ function periodStart(period) {
 }
 
 export default function ReportsPage() {
-  const { shopId } = useAuth();
+  const { shopId, isAdmin } = useAuth();
   const [sales,    setSales]    = useState([]);
   const [products, setProducts] = useState([]);
   const [loading,  setLoading]  = useState(true);
@@ -91,8 +91,8 @@ export default function ReportsPage() {
     catMap[cat].profit += Number(s.profit       || 0);
     catMap[cat].units  += s.quantity || 0;
   });
-  const catRows   = Object.entries(catMap).sort((a,b) => b[1].rev - a[1].rev);
-  const maxCatRev = catRows.length ? catRows[0][1].rev : 1;
+  const catRows   = Object.entries(catMap).sort((a,b) => isAdmin ? b[1].rev - a[1].rev : b[1].units - a[1].units);
+  const maxCatVal = catRows.length ? catRows[0][1][isAdmin ? 'rev' : 'units'] : 1;
 
   // ---- Top products ----
   const prodMap = {};
@@ -103,7 +103,8 @@ export default function ReportsPage() {
     prodMap[k].profit += Number(s.profit       || 0);
     prodMap[k].units  += s.quantity || 0;
   });
-  const topProducts = Object.entries(prodMap).sort((a,b) => b[1].rev - a[1].rev).slice(0, 8);
+  const topProducts = Object.entries(prodMap).sort((a,b) => isAdmin ? b[1].rev - a[1].rev : b[1].units - a[1].units).slice(0, 8);
+  const topCategory = catRows.length ? { cat: catRows[0][0], units: catRows[0][1].units } : null;
 
   // ---- Daily revenue for mini bar chart (last 7 days) ----
   const dayMap = {};
@@ -160,26 +161,53 @@ export default function ReportsPage() {
 
       {/* ---- KEY METRICS ---- */}
       <div className="grid-4 mb-md">
-        <div className="metric-card metric-brand">
-          <div className="metric-label">Revenue</div>
-          <div className="metric-value">{fmtKES(revenue)}</div>
-          <div className="metric-sub up">{txnCount} transaction{txnCount !== 1 ? 's' : ''}</div>
-        </div>
-        <div className="metric-card metric-brand">
-          <div className="metric-label">Profit</div>
-          <div className="metric-value" style={{ color: 'var(--brand)' }}>{fmtKES(profit)}</div>
-          <div className="metric-sub up">{margin}% margin</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Units Sold</div>
-          <div className="metric-value">{unitsSold}</div>
-          <div className="metric-sub">{txnCount} transactions</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Avg Profit / Sale</div>
-          <div className="metric-value">{fmtKES(Math.round(avgProfit))}</div>
-          <div className="metric-sub">avg sale {fmtKES(Math.round(avgSale))}</div>
-        </div>
+        {isAdmin ? (
+          <>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Revenue</div>
+              <div className="metric-value">{fmtKES(revenue)}</div>
+              <div className="metric-sub up">{txnCount} transaction{txnCount !== 1 ? 's' : ''}</div>
+            </div>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Profit</div>
+              <div className="metric-value" style={{ color: 'var(--brand)' }}>{fmtKES(profit)}</div>
+              <div className="metric-sub up">{margin}% margin</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Units Sold</div>
+              <div className="metric-value">{unitsSold}</div>
+              <div className="metric-sub">{txnCount} transactions</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Avg Profit / Sale</div>
+              <div className="metric-value">{fmtKES(Math.round(avgProfit))}</div>
+              <div className="metric-sub">avg sale {fmtKES(Math.round(avgSale))}</div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Transactions</div>
+              <div className="metric-value">{txnCount}</div>
+              <div className="metric-sub up">{fmtKES(revenue)} total</div>
+            </div>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Units Sold</div>
+              <div className="metric-value">{unitsSold}</div>
+              <div className="metric-sub">{txnCount} transactions</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Avg Sale</div>
+              <div className="metric-value">{fmtKES(Math.round(avgSale))}</div>
+              <div className="metric-sub">per transaction</div>
+            </div>
+            <div className="metric-card">
+              <div className="metric-label">Top Category</div>
+              <div className="metric-value">{topCategory ? topCategory.cat : '—'}</div>
+              <div className="metric-sub">{topCategory ? `${topCategory.units} units` : 'No data'}</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* ---- REVENUE CHART + CATEGORY BREAKDOWN ---- */}
@@ -188,7 +216,7 @@ export default function ReportsPage() {
         {/* 7-day bar chart */}
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Revenue — last 7 days</span>
+            <span className="card-title">{isAdmin ? 'Revenue' : 'Sales'} — last 7 days</span>
           </div>
           <div className="rep-chart">
             {dayEntries.map(([day, val]) => {
@@ -229,17 +257,23 @@ export default function ReportsPage() {
                 <div key={cat} className="rep-cat-row">
                   <div className="rep-cat-header">
                     <span className="rep-cat-name">{cat}</span>
-                    <span className="rep-cat-rev">{fmtKES(d.rev)}</span>
+                    <span className="rep-cat-rev">{isAdmin ? fmtKES(d.rev) : `${d.units} units`}</span>
                   </div>
                   <div className="rep-bar-track">
                     <div
                       className="rep-bar-fill"
-                      style={{ width: `${Math.round((d.rev / maxCatRev) * 100)}%` }}
+                      style={{ width: `${Math.round((d[isAdmin ? 'rev' : 'units'] / maxCatVal) * 100)}%` }}
                     />
                   </div>
                   <div className="rep-cat-sub">
-                    <span>Profit: <strong>{fmtKES(d.profit)}</strong></span>
-                    <span>{d.units} unit{d.units !== 1 ? 's' : ''} sold</span>
+                    {isAdmin ? (
+                      <>
+                        <span>Profit: <strong>{fmtKES(d.profit)}</strong></span>
+                        <span>{d.units} unit{d.units !== 1 ? 's' : ''} sold</span>
+                      </>
+                    ) : (
+                      <span>{d.units} unit{d.units !== 1 ? 's' : ''} sold</span>
+                    )}
                   </div>
                 </div>
               ))}
@@ -267,10 +301,10 @@ export default function ReportsPage() {
                     <div className="rep-top-name">{name}</div>
                     <div className="rep-top-stats">
                       <span>{d.units} units</span>
-                      <span className="rep-top-profit">+{fmtKES(d.profit)} profit</span>
+                      {isAdmin && <span className="rep-top-profit">+{fmtKES(d.profit)} profit</span>}
                     </div>
                   </div>
-                  <div className="rep-top-rev">{fmtKES(d.rev)}</div>
+                  <div className="rep-top-rev">{isAdmin ? fmtKES(d.rev) : `${d.units} units`}</div>
                 </div>
               ))}
             </div>
@@ -282,9 +316,9 @@ export default function ReportsPage() {
                   <tr>
                     <th>#</th>
                     <th>Product</th>
-                    <th>Revenue</th>
-                    <th>Profit</th>
-                    <th>Margin</th>
+                    {isAdmin && <th>Revenue</th>}
+                    {isAdmin && <th>Profit</th>}
+                    {isAdmin && <th>Margin</th>}
                     <th>Units sold</th>
                   </tr>
                 </thead>
@@ -295,16 +329,16 @@ export default function ReportsPage() {
                       <tr key={name}>
                         <td style={{ color: 'var(--text-tertiary)', fontSize: 12 }}>{i + 1}</td>
                         <td style={{ fontWeight: 500 }}>{name}</td>
-                        <td style={{ fontWeight: 600 }}>{fmtKES(d.rev)}</td>
-                        <td style={{ color: 'var(--brand)', fontWeight: 600 }}>{fmtKES(d.profit)}</td>
-                        <td>
+                        {isAdmin && <td style={{ fontWeight: 600 }}>{fmtKES(d.rev)}</td>}
+                        {isAdmin && <td style={{ color: 'var(--brand)', fontWeight: 600 }}>{fmtKES(d.profit)}</td>}
+                        {isAdmin && <td>
                           <span style={{
                             fontSize: 12, fontWeight: 600,
                             color: prodMargin >= 20 ? 'var(--brand)' : prodMargin > 0 ? 'var(--amber)' : 'var(--red)',
                           }}>
                             {prodMargin}%
                           </span>
-                        </td>
+                        </td>}
                         <td>{d.units}</td>
                       </tr>
                     );
@@ -320,31 +354,48 @@ export default function ReportsPage() {
       <div className="grid-2 mb-md">
         <div className="card">
           <div className="card-header">
-            <span className="card-title">Stock value</span>
+            <span className="card-title">{isAdmin ? 'Stock value' : 'Inventory health'}</span>
           </div>
           <div className="rep-stock-stats">
-            <div className="rep-stock-item">
-              <div className="metric-label">Retail value</div>
-              <div className="rep-stock-val">{fmtKES(stockValue)}</div>
-              <div className="metric-sub">at sell price</div>
-            </div>
-            <div className="rep-stock-item">
-              <div className="metric-label">Cost value</div>
-              <div className="rep-stock-val">{fmtKES(stockCost)}</div>
-              <div className="metric-sub">at buy price</div>
-            </div>
-            <div className="rep-stock-item">
-              <div className="metric-label">Total products</div>
-              <div className="rep-stock-val">{products.length}</div>
-              <div className="metric-sub">SKUs</div>
-            </div>
-            <div className="rep-stock-item">
-              <div className="metric-label">Total units</div>
-              <div className="rep-stock-val">
-                {products.reduce((a, p) => a + (p.quantity || 0), 0)}
-              </div>
-              <div className="metric-sub">in stock</div>
-            </div>
+            {isAdmin ? (
+              <>
+                <div className="rep-stock-item">
+                  <div className="metric-label">Retail value</div>
+                  <div className="rep-stock-val">{fmtKES(stockValue)}</div>
+                  <div className="metric-sub">at sell price</div>
+                </div>
+                <div className="rep-stock-item">
+                  <div className="metric-label">Cost value</div>
+                  <div className="rep-stock-val">{fmtKES(stockCost)}</div>
+                  <div className="metric-sub">at buy price</div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="rep-stock-item">
+                  <div className="metric-label">Total products</div>
+                  <div className="rep-stock-val">{products.length}</div>
+                  <div className="metric-sub">SKUs</div>
+                </div>
+                <div className="rep-stock-item">
+                  <div className="metric-label">Total units</div>
+                  <div className="rep-stock-val">
+                    {products.reduce((a, p) => a + (p.quantity || 0), 0)}
+                  </div>
+                  <div className="metric-sub">in stock</div>
+                </div>
+                <div className="rep-stock-item">
+                  <div className="metric-label">Low stock</div>
+                  <div className="rep-stock-val">{lowStock.length}</div>
+                  <div className="metric-sub">items need restock</div>
+                </div>
+                <div className="rep-stock-item">
+                  <div className="metric-label">Out of stock</div>
+                  <div className="rep-stock-val">{oos.length}</div>
+                  <div className="metric-sub">items unavailable</div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

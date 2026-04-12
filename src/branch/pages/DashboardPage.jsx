@@ -32,7 +32,7 @@ function DashboardSkeleton() {
 }
 
 export default function DashboardPage({ onNavigate }) {
-  const { shopId } = useAuth();
+  const { shopId, isAdmin } = useAuth();
   const [data,      setData]      = useState(null);
   const [loading,   setLoading]   = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -112,6 +112,15 @@ export default function DashboardPage({ onNavigate }) {
     prodRevMap[k] = (prodRevMap[k] || 0) + Number(s.total_amount || 0);
   });
   const topSellers  = Object.entries(prodRevMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  // Top by units (for managers)
+  const prodUnitMap = {};
+  sales.forEach(s => {
+    const k = s.product_name || 'Unknown';
+    prodUnitMap[k] = (prodUnitMap[k] || 0) + Number(s.quantity || 0);
+  });
+  const topByUnits  = Object.entries(prodUnitMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
   const recentSales = sales.slice(0, 5);
 
   return (
@@ -121,27 +130,55 @@ export default function DashboardPage({ onNavigate }) {
 
       {/* ---- METRICS ---- */}
       <div className="grid-4 mb-md">
-        <div className="metric-card metric-brand">
-          <div className="metric-label">Today's Revenue</div>
-          <div className="metric-value">{fmtKES(todayRev)}</div>
-          <div className="metric-sub up">
-            {todaySales.length} transaction{todaySales.length !== 1 ? 's' : ''}
-          </div>
-        </div>
-        <div className="metric-card metric-brand">
-          <div className="metric-label">Today's Profit</div>
-          <div className="metric-value" style={{ color: 'var(--brand)' }}>
-            {fmtKES(todayProfit)}
-          </div>
-          <div className="metric-sub up">{todayMargin}% margin</div>
-        </div>
-        <div className="metric-card metric-blue">
-          <div className="metric-label">Stock Value</div>
-          <div className="metric-value">{fmtKES(totalStockVal)}</div>
-          <div className="metric-sub">
-            {products.reduce((a, p) => a + (p.quantity || 0), 0)} units · {products.length} SKUs
-          </div>
-        </div>
+        {isAdmin ? (
+          <>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Today's Revenue</div>
+              <div className="metric-value">{fmtKES(todayRev)}</div>
+              <div className="metric-sub up">
+                {todaySales.length} transaction{todaySales.length !== 1 ? 's' : ''}
+              </div>
+            </div>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Today's Profit</div>
+              <div className="metric-value" style={{ color: 'var(--brand)' }}>
+                {fmtKES(todayProfit)}
+              </div>
+              <div className="metric-sub up">{todayMargin}% margin</div>
+            </div>
+            <div className="metric-card metric-blue">
+              <div className="metric-label">Stock Value</div>
+              <div className="metric-value">{fmtKES(totalStockVal)}</div>
+              <div className="metric-sub">
+                {products.reduce((a, p) => a + (p.quantity || 0), 0)} units · {products.length} SKUs
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Today's Transactions</div>
+              <div className="metric-value">{todaySales.length}</div>
+              <div className="metric-sub up">
+                {fmtKES(todayRev)} total sales
+              </div>
+            </div>
+            <div className="metric-card metric-brand">
+              <div className="metric-label">Units Sold Today</div>
+              <div className="metric-value" style={{ color: 'var(--brand)' }}>
+                {todaySales.reduce((a, s) => a + Number(s.quantity || 0), 0)}
+              </div>
+              <div className="metric-sub up">Across {todaySales.length} sales</div>
+            </div>
+            <div className="metric-card metric-blue">
+              <div className="metric-label">Total Stock</div>
+              <div className="metric-value">{products.reduce((a, p) => a + (p.quantity || 0), 0)}</div>
+              <div className="metric-sub">
+                {products.length} products · {oosItems.length + lowItems.length} alerts
+              </div>
+            </div>
+          </>
+        )}
         <div className={`metric-card ${oosItems.length > 0 ? 'metric-red' : lowItems.length > 0 ? 'metric-amber' : ''}`}>
           <div className="metric-label">Stock Alerts</div>
           <div className="metric-value" style={{
@@ -159,78 +196,119 @@ export default function DashboardPage({ onNavigate }) {
         </div>
       </div>
 
-      {/* ---- STOCK ALERTS (admin-style card) ---- */}
-      <div className="mb-md">
-        {alertCount > 0 ? (
-          <div className="card dash-stock-card">
-            <div className="card-header">
-              <div>
-                <div className="card-title dash-stock-card-title">
-                  <span className="dash-stock-alert-dot" aria-hidden />
-                  Stock alerts
+      {/* ---- STOCK ALERTS + TOP SELLERS (IMPROVED HIERARCHY) ---- */}
+      <div className="grid-2 mb-md">
+        <div>
+          {alertCount > 0 ? (
+            <div className="card dash-stock-card">
+              <div className="card-header">
+                <div>
+                  <div className="card-title dash-stock-card-title">
+                    <span className="dash-stock-alert-dot" aria-hidden />
+                    Stock alerts
+                  </div>
+                  <div className="dash-stock-card-sub">
+                    {alertCount} item{alertCount !== 1 ? 's' : ''} need attention
+                  </div>
                 </div>
-                <div className="dash-stock-card-sub">
-                  {alertCount} item{alertCount !== 1 ? 's' : ''} need attention
-                </div>
+                <button type="button" className="btn btn-sm btn-ghost" onClick={() => onNavigate('inventory')}>
+                  View all
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
               </div>
-              <button type="button" className="btn btn-sm btn-ghost" onClick={() => onNavigate('inventory')}>
-                View all
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                  <polyline points="12 5 19 12 12 19"/>
-                </svg>
-              </button>
-            </div>
-            <div className="dash-stock-list">
-              {alertPreview.map(p => (
-                <div key={p.id} className={`dash-stock-item ${p.status}`}>
-                  <div className="dash-stock-item-left">
-                    <div className={`dash-stock-badge ${p.status}`}>
-                      {p.status === 'oos' ? '0' : p.quantity}
-                    </div>
-                    <div className="dash-stock-item-text">
-                      <div className="dash-stock-name">{p.name}</div>
-                      <div className="dash-stock-meta">
-                        {p.category || 'Uncategorized'}
-                        {p.status === 'low' && (
-                          <> · alert at {p.alert_qty || 5}</>
-                        )}
+              <div className="dash-stock-list">
+                {alertPreview.map(p => (
+                  <div key={p.id} className={`dash-stock-item ${p.status}`}>
+                    <div className="dash-stock-item-left">
+                      <div className={`dash-stock-badge ${p.status}`}>
+                        {p.status === 'oos' ? '0' : p.quantity}
+                      </div>
+                      <div className="dash-stock-item-text">
+                        <div className="dash-stock-name">{p.name}</div>
+                        <div className="dash-stock-meta">
+                          {p.category || 'Uncategorized'}
+                          {p.status === 'low' && (
+                            <> · alert at {p.alert_qty || 5}</>
+                          )}
+                        </div>
                       </div>
                     </div>
+                    <span className={`badge ${p.status === 'oos' ? 'badge-danger' : 'badge-warn'}`}>
+                      {p.status === 'oos' ? 'Out of stock' : 'Low stock'}
+                    </span>
                   </div>
-                  <span className={`badge ${p.status === 'oos' ? 'badge-danger' : 'badge-warn'}`}>
-                    {p.status === 'oos' ? 'Out of stock' : 'Low stock'}
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
+              {alertCount > 4 && (
+                <button type="button" className="dash-stock-more" onClick={() => onNavigate('inventory')}>
+                  +{alertCount - 4} more — View in Inventory
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <polyline points="12 5 19 12 12 19"/>
+                  </svg>
+                </button>
+              )}
             </div>
-            {alertCount > 4 && (
-              <button type="button" className="dash-stock-more" onClick={() => onNavigate('inventory')}>
-                +{alertCount - 4} more — View in Inventory
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-                  <line x1="5" y1="12" x2="19" y2="12"/>
-                  <polyline points="12 5 19 12 12 19"/>
-                </svg>
-              </button>
-            )}
+          ) : (
+            <div className="card dash-stock-card dash-stock-all-good">
+              <div className="dash-stock-good-inner">
+                <div className="dash-stock-good-icon" aria-hidden>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <div className="dash-stock-good-title">All stock levels healthy</div>
+                <div className="dash-stock-good-desc">No products are running low right now.</div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Top {isAdmin ? 'selling' : 'sold'} products</span>
+            <span className="badge badge-neutral">All time</span>
           </div>
-        ) : (
-          <div className="card dash-stock-card dash-stock-all-good">
-            <div className="dash-stock-good-inner">
-              <div className="dash-stock-good-icon" aria-hidden>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="20 6 9 17 4 12"/>
+          {(isAdmin ? topSellers : topByUnits).length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="20" x2="18" y2="10"/>
+                  <line x1="12" y1="20" x2="12" y2="4"/>
+                  <line x1="6"  y1="20" x2="6"  y2="14"/>
                 </svg>
               </div>
-              <div className="dash-stock-good-title">All stock levels healthy</div>
-              <div className="dash-stock-good-desc">No products are running low right now.</div>
+              <p>Sales data will appear here once transactions are recorded.</p>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className="dash-top-list">
+              {(isAdmin ? topSellers : topByUnits).map(([name, val], i) => {
+                const list = isAdmin ? topSellers : topByUnits;
+                const pct = Math.round((val / list[0][1]) * 100);
+                return (
+                  <div key={name} className="dash-top-row">
+                    <div className="dash-top-meta">
+                      <span className="dash-top-rank">{i + 1}</span>
+                      <span className="dash-top-name">{name}</span>
+                    </div>
+                    <div className="dash-top-bar-wrap">
+                      <div className="dash-top-bar" style={{ width: `${pct}%` }}/>
+                    </div>
+                    <span className="dash-top-rev">{isAdmin ? fmtKES(val) : `${val} units`}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* ---- RECENT SALES + TOP SELLERS ---- */}
-      <div className="grid-2 mb-md">
+      {/* ---- RECENT SALES ---- */}
+      <div className="mb-md">
         <div className="card">
           <div className="card-header">
             <span className="card-title">Recent sales</span>
@@ -273,47 +351,7 @@ export default function DashboardPage({ onNavigate }) {
             </div>
           )}
         </div>
-
-        <div className="card">
-          <div className="card-header">
-            <span className="card-title">Top selling products</span>
-            <span className="badge badge-neutral">All time</span>
-          </div>
-          {topSellers.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="20" x2="18" y2="10"/>
-                  <line x1="12" y1="20" x2="12" y2="4"/>
-                  <line x1="6"  y1="20" x2="6"  y2="14"/>
-                </svg>
-              </div>
-              <p>Sales data will appear here once transactions are recorded.</p>
-            </div>
-          ) : (
-            <div className="dash-top-list">
-              {topSellers.map(([name, rev], i) => {
-                const pct = Math.round((rev / topSellers[0][1]) * 100);
-                return (
-                  <div key={name} className="dash-top-row">
-                    <div className="dash-top-meta">
-                      <span className="dash-top-rank">{i + 1}</span>
-                      <span className="dash-top-name">{name}</span>
-                    </div>
-                    <div className="dash-top-bar-wrap">
-                      <div className="dash-top-bar" style={{ width: `${pct}%` }}/>
-                    </div>
-                    <span className="dash-top-rev">{fmtKES(rev)}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
       </div>
-
-      {/* ---- TODAY STATS + QUICK ACTIONS ---- */}
       <div className="grid-2">
         <div className="card">
           <div className="card-header">
@@ -324,7 +362,7 @@ export default function DashboardPage({ onNavigate }) {
               { label: 'Units sold',      value: todayUnits },
               { label: 'Transactions',    value: todaySales.length },
               { label: 'Avg per sale',    value: todaySales.length ? fmtKES(Math.round(todayRev    / todaySales.length)) : 'KSh 0' },
-              { label: 'Avg profit/sale', value: todaySales.length ? fmtKES(Math.round(todayProfit / todaySales.length)) : 'KSh 0' },
+              ...(isAdmin ? [{ label: 'Avg profit/sale', value: todaySales.length ? fmtKES(Math.round(todayProfit / todaySales.length)) : 'KSh 0' }] : []),
             ].map(item => (
               <div key={item.label} className="dash-today-stat">
                 <div className="metric-label">{item.label}</div>

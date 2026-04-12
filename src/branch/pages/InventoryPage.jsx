@@ -37,7 +37,7 @@ const EMPTY_FORM = {
 };
 
 export default function InventoryPage() {
-  const { shopId } = useAuth();
+  const { shopId, isAdmin } = useAuth();
   const toast = useToast();
   const toastRef = useRef(toast);
   toastRef.current = toast;
@@ -46,6 +46,7 @@ export default function InventoryPage() {
   const [loading,       setLoading]       = useState(true);
   const [fetchError,    setFetchError]    = useState(false);
   const [saving,        setSaving]        = useState(false);
+  const [quickSellId,   setQuickSellId]   = useState(null);
   const [search,        setSearch]        = useState('');
   const [catFilter,     setCatFilter]     = useState('all');
   const [form,          setForm]          = useState(EMPTY_FORM);
@@ -118,8 +119,8 @@ export default function InventoryPage() {
       category:       isPreset ? p.category : PRESET_CATEGORIES[0],
       useCustom:      !isPreset,
       customCategory: isPreset ? '' : (p.category || ''),
-      buy_price:      p.buy_price  ?? '',
-      sell_price:     p.sell_price ?? '',
+      buy_price:      isAdmin ? (p.buy_price  ?? '') : '',
+      sell_price:     isAdmin ? (p.sell_price ?? '') : '',
       quantity:       p.quantity   ?? '',
       alert_qty:      p.alert_qty  ?? 5,
     });
@@ -139,9 +140,11 @@ export default function InventoryPage() {
             buy_price, sell_price, quantity, alert_qty } = form;
 
     if (!name.trim())                    return toastRef.current.error('Product name is required');
-    if (buy_price === '' || +buy_price < 0)   return toastRef.current.error('Enter a valid buy price');
     if (!sell_price || +sell_price <= 0) return toastRef.current.error('Enter a valid sell price');
-    if (+sell_price < +buy_price)        return toastRef.current.error('Sell price is less than buy price — check your prices');
+    if (isAdmin) {
+      if (buy_price === '' || +buy_price < 0)   return toastRef.current.error('Enter a valid buy price');
+      if (+sell_price < +buy_price)        return toastRef.current.error('Sell price is less than buy price — check your prices');
+    }
     if (quantity === '' || +quantity < 0) return toastRef.current.error('Enter a valid quantity');
 
     const finalCategory = useCustom
@@ -152,12 +155,17 @@ export default function InventoryPage() {
     const payload = {
       name:       name.trim(),
       category:   finalCategory,
-      buy_price:  +buy_price,
+      buy_price:  isAdmin ? +buy_price : (editId ? undefined : 0),
       sell_price: +sell_price,
       quantity:   +quantity,
       alert_qty:  +alert_qty || 5,
       shop_id:    shopId,
     };
+
+    // Remove undefined fields for updates
+    if (editId) {
+      Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
+    }
 
     const { error } = editId
       ? await supabase.from('products').update(payload).eq('id', editId)
@@ -200,6 +208,7 @@ export default function InventoryPage() {
   // ---- Quick sell (1 unit, walk-in) ----
   const handleQuickSell = async p => {
     if ((p.quantity || 0) < 1) return toastRef.current.error('Out of stock!');
+    setQuickSellId(p.id);
     const newQty = (p.quantity || 0) - 1;
 
     const { error: stockErr } = await supabase
@@ -207,7 +216,10 @@ export default function InventoryPage() {
       .update({ quantity: newQty })
       .eq('id', p.id);
 
-    if (stockErr) return toastRef.current.error('Stock update failed');
+    if (stockErr) {
+      setQuickSellId(null);
+      return toastRef.current.error('Stock update failed');
+    }
 
     const { error: saleErr } = await supabase.from('sales').insert({
       shop_id:       shopId,
@@ -220,10 +232,12 @@ export default function InventoryPage() {
     });
 
     if (saleErr) {
+      setQuickSellId(null);
       toastRef.current.warning('Stock updated but sale record failed');
     } else {
       toastRef.current.success(`Sold: ${p.name} — ${fmtKES(p.sell_price)}`);
     }
+    setQuickSellId(null);
     fetchProducts();
   };
 
@@ -250,11 +264,19 @@ export default function InventoryPage() {
 
       {/* ---- STATS ---- */}
       <div className="grid-4 mb-md">
-        <div className="metric-card metric-brand">
-          <div className="metric-label">Stock Value</div>
-          <div className="metric-value">{fmtKES(stockValue)}</div>
-          <div className="metric-sub">{products.length} products</div>
-        </div>
+        {isAdmin ? (
+          <div className="metric-card metric-brand">
+            <div className="metric-label">Stock Value</div>
+            <div className="metric-value">{fmtKES(stockValue)}</div>
+            <div className="metric-sub">{products.length} products</div>
+          </div>
+        ) : (
+          <div className="metric-card metric-brand">
+            <div className="metric-label">Total Products</div>
+            <div className="metric-value">{products.length}</div>
+            <div className="metric-sub">{totalUnits} units in stock</div>
+          </div>
+        )}
         <div className="metric-card">
           <div className="metric-label">Total Units</div>
           <div className="metric-value">{totalUnits}</div>
@@ -361,18 +383,20 @@ export default function InventoryPage() {
 
             {/* Buy / Sell price */}
             <div className="grid-2">
-              <div className="form-group">
-                <label className="form-label">Buy price (KSh) *</label>
-                <input
-                  name="buy_price"
-                  type="number"
-                  min="0"
-                  className="form-input"
-                  placeholder="What you paid"
-                  value={form.buy_price}
-                  onChange={handleChange}
-                />
-              </div>
+              {isAdmin && (
+                <div className="form-group">
+                  <label className="form-label">Buy price (KSh) *</label>
+                  <input
+                    name="buy_price"
+                    type="number"
+                    min="0"
+                    className="form-input"
+                    placeholder="What you paid"
+                    value={form.buy_price}
+                    onChange={handleChange}
+                  />
+                </div>
+              )}
               <div className="form-group">
                 <label className="form-label">Sell price (KSh) *</label>
                 <input
@@ -388,7 +412,7 @@ export default function InventoryPage() {
             </div>
 
             {/* Live margin preview */}
-            {form.buy_price && form.sell_price && (
+            {isAdmin && form.buy_price && form.sell_price && (
               +form.sell_price > +form.buy_price ? (
                 <div className="inv-margin-hint">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -558,6 +582,8 @@ export default function InventoryPage() {
                 <ProductCard
                   key={p.id}
                   product={p}
+                  isAdmin={isAdmin}
+                  isQuickSelling={quickSellId === p.id}
                   onEdit={() => openEdit(p)}
                   onSell={() => handleQuickSell(p)}
                   onDelete={() => setDeleteConfirm(p)}
@@ -573,9 +599,9 @@ export default function InventoryPage() {
                   <tr>
                     <th>Product</th>
                     <th>Category</th>
-                    <th>Buy</th>
+                    {isAdmin && <th>Buy</th>}
                     <th>Sell</th>
-                    <th>Margin</th>
+                    {isAdmin && <th>Margin</th>}
                     <th>Qty</th>
                     <th>Status</th>
                     <th style={{ textAlign: 'right' }}>Actions</th>
@@ -590,16 +616,16 @@ export default function InventoryPage() {
                       <tr key={p.id}>
                         <td style={{ fontWeight: 500 }}>{p.name}</td>
                         <td><span className="badge badge-info">{p.category || '—'}</span></td>
-                        <td style={{ fontSize: 12 }}>{fmtKES(p.buy_price)}</td>
+                        {isAdmin && <td style={{ fontSize: 12 }}>{fmtKES(p.buy_price)}</td>}
                         <td style={{ fontSize: 12 }}>{fmtKES(p.sell_price)}</td>
-                        <td>
+                        {isAdmin && <td>
                           <span style={{
                             fontSize: 12, fontWeight: 600,
                             color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)',
                           }}>
                             {mg}%
                           </span>
-                        </td>
+                        </td>}
                         <td>
                           <div className="inv-stock-cell">
                             <span style={{ fontWeight: 600, minWidth: 24 }}>{p.quantity ?? 0}</span>
@@ -617,9 +643,15 @@ export default function InventoryPage() {
                             <button
                               className="btn btn-secondary btn-sm"
                               onClick={() => handleQuickSell(p)}
-                              disabled={(p.quantity || 0) === 0}
+                              disabled={(p.quantity || 0) === 0 || quickSellId === p.id}
                             >
-                              Sell 1
+                              {quickSellId === p.id ? (
+                                <>
+                                  <span className="spinner spinner-sm" /> Selling…
+                                </>
+                              ) : (
+                                'Sell 1'
+                              )}
                             </button>
                             <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>
                               Edit
@@ -669,7 +701,7 @@ export default function InventoryPage() {
 }
 
 // ---- Mobile product card sub-component ----
-function ProductCard({ product: p, onEdit, onSell, onDelete, onRestock }) {
+function ProductCard({ product: p, isAdmin, isQuickSelling, onEdit, onSell, onDelete, onRestock }) {
   const [showRestock, setShowRestock] = useState(false);
   const [restockAmt,  setRestockAmt]  = useState('');
   const { status, label } = stockStatus(p.quantity || 0, p.alert_qty || 5);
@@ -702,26 +734,35 @@ function ProductCard({ product: p, onEdit, onSell, onDelete, onRestock }) {
       </div>
 
       <div className="inv-product-prices">
-        <div className="inv-price-item">
-          <span className="metric-label">Buy price</span>
-          <span className="inv-price-val">{fmtKES(p.buy_price)}</span>
-        </div>
-        <div className="inv-price-item">
-          <span className="metric-label">Sell price</span>
-          <span className="inv-price-val">{fmtKES(p.sell_price)}</span>
-        </div>
-        <div className="inv-price-item">
-          <span className="metric-label">Profit/unit</span>
-          <span className="inv-price-val" style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
-            {fmtKES((p.sell_price || 0) - (p.buy_price || 0))}
-          </span>
-        </div>
-        <div className="inv-price-item">
-          <span className="metric-label">Margin</span>
-          <span className="inv-price-val" style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
-            {mg}%
-          </span>
-        </div>
+        {isAdmin ? (
+          <>
+            <div className="inv-price-item">
+              <span className="metric-label">Buy price</span>
+              <span className="inv-price-val">{fmtKES(p.buy_price)}</span>
+            </div>
+            <div className="inv-price-item">
+              <span className="metric-label">Sell price</span>
+              <span className="inv-price-val">{fmtKES(p.sell_price)}</span>
+            </div>
+            <div className="inv-price-item">
+              <span className="metric-label">Profit/unit</span>
+              <span className="inv-price-val" style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
+                {fmtKES((p.sell_price || 0) - (p.buy_price || 0))}
+              </span>
+            </div>
+            <div className="inv-price-item">
+              <span className="metric-label">Margin</span>
+              <span className="inv-price-val" style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
+                {mg}%
+              </span>
+            </div>
+          </>
+        ) : (
+          <div className="inv-price-item">
+            <span className="metric-label">Sell price</span>
+            <span className="inv-price-val">{fmtKES(p.sell_price)}</span>
+          </div>
+        )}
       </div>
 
       {/* Inline restock */}
@@ -762,9 +803,15 @@ function ProductCard({ product: p, onEdit, onSell, onDelete, onRestock }) {
         <button
           className="btn btn-secondary btn-sm"
           onClick={onSell}
-          disabled={(p.quantity || 0) === 0}
+          disabled={(p.quantity || 0) === 0 || isQuickSelling}
         >
-          Sell 1
+          {isQuickSelling ? (
+            <>
+              <span className="spinner spinner-sm" /> Selling…
+            </>
+          ) : (
+            'Sell 1'
+          )}
         </button>
         <button
           className="btn btn-ghost btn-sm"

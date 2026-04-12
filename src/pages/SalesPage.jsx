@@ -57,26 +57,28 @@ export default function SalesPage() {
     setForm(f => ({ ...f, shop_id: defaultShop, product_id: '', unit_price: '' }));
   }, [activeShopId, shops]);
 
+  // ---- Fetch products when shop changes ----
   useEffect(() => {
     if (!form.shop_id) { setProducts([]); return; }
-    supabase
-      .from('products')
-      .select('id, name, sell_price, buy_price, quantity')
-      .eq('shop_id', form.shop_id)
-      .gt('quantity', 0)
-      .order('name')
-      .then(({ data }) => {
-        setProducts(data || []);
-        if (data?.length > 0) {
-          setForm(f => ({
-            ...f,
-            product_id: f.product_id || data[0].id,
-            unit_price:  f.product_id ? f.unit_price : String(data[0].sell_price),
-          }));
-        } else {
-          setForm(f => ({ ...f, product_id: '', unit_price: '' }));
-        }
-      });
+    const loadProducts = async () => {
+      const { data } = await supabase
+        .from('products')
+        .select('id, name, sell_price, buy_price, quantity')
+        .eq('shop_id', form.shop_id)
+        .gt('quantity', 0)
+        .order('name');
+      setProducts(data || []);
+      if (data?.length > 0) {
+        setForm(f => ({
+          ...f,
+          product_id: f.product_id || data[0].id,
+          unit_price:  f.product_id ? f.unit_price : String(data[0].sell_price),
+        }));
+      } else {
+        setForm(f => ({ ...f, product_id: '', unit_price: '' }));
+      }
+    };
+    loadProducts();
   }, [form.shop_id]);
 
   const handleChange = e => {
@@ -90,6 +92,29 @@ export default function SalesPage() {
       return updated;
     });
   };
+
+  // ---- Refresh products data ----
+  const refreshProducts = useCallback(async () => {
+    if (!form.shop_id) return;
+    const { data } = await supabase
+      .from('products')
+      .select('id, name, sell_price, buy_price, quantity')
+      .eq('shop_id', form.shop_id)
+      .gt('quantity', 0)
+      .order('name');
+    setProducts(data || []);
+  }, [form.shop_id]);
+
+  // ---- Refresh products when page becomes visible ----
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshProducts();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [refreshProducts]);
 
   const handleRecord = async () => {
     const { shop_id, product_id, quantity, unit_price, customer_name } = form;
