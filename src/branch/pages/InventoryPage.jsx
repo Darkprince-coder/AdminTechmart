@@ -819,8 +819,8 @@ function ProductCard({ product: p, isAdmin, isQuickSelling, onEdit, onSell, onDe
         >
           Restock
         </button>
-        <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button>
-        <button className="btn btn-danger btn-sm" onClick={onDelete}>Delete</button>
+        {/* <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button> */}
+        {/* <button className="btn btn-danger btn-sm" onClick={onDelete}>Delete</button> */}
       </div>
     </div>
   );
