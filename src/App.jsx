@@ -1,20 +1,22 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth }     from './context/AuthContext';
 import { ShopProvider }              from './context/ShopContext';
 import { ToastProvider }             from './context/ToastContext';
 import { ThemeProvider }             from './context/ThemeContext';
 import { ErrorBoundary, NetworkGuard } from './components/ErrorBoundary';
-import AdminLayout       from './components/AdminLayout';
-import LoginPage         from './pages/LoginPage';
-import RoleSelectPage    from './pages/RoleSelectPage';
-import OverviewPage      from './pages/OverviewPage';
-import InventoryPage     from './pages/InventoryPage';
-import SalesPage         from './pages/SalesPage';
-import TransferPage      from './pages/TransferPage';
-import ReportsPage       from './pages/ReportsPage';
-import UserManagementPage from './pages/UserManagementPage';
-import AuditLogsPage      from './pages/AuditLogsPage';
-import BranchApp          from './branch/BranchApp';
+import PWAInstallPrompt              from './components/PWAInstallPrompt';
+import AdminLayout                   from './components/AdminLayout';
+import LoginPage                     from './pages/LoginPage';
+import RoleSelectPage                from './pages/RoleSelectPage';
+import OverviewPage                  from './pages/OverviewPage';
+import InventoryPage                 from './pages/InventoryPage';
+import SalesPage                     from './pages/SalesPage';
+import TransferPage                  from './pages/TransferPage';
+import ReportsPage                   from './pages/ReportsPage';
+import UserManagementPage            from './pages/UserManagementPage';
+import AuditLogsPage                 from './pages/AuditLogsPage';
+import BranchApp                     from './branch/BranchApp';
 
 import './styles/globals.css';
 import './styles/components.css';
@@ -116,6 +118,9 @@ export default function App() {
                 <Route path="/branch/*" element={<ProtectedRoute allowedRoles={['manager']}><BranchApp /></ProtectedRoute>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
+
+              {/* PWA install prompt — shown once after 3s, dismissed state persists */}
+              <PWAInstallPrompt />
             </AuthProvider>
           </BrowserRouter>
         </ThemeProvider>

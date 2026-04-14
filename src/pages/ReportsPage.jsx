@@ -357,6 +357,8 @@ export default function ReportsPage() {
             top products, branch comparison, and a low-stock snapshot. Sales register is every
             transaction line. Reorder sheet is formatted for suppliers (qty + reference prices).
           </p>
+
+          
         </div>
         <div className="rep-export-actions">
           <button type="button" className="rep-export-btn" disabled={!!pdfBusy} onClick={() => runPdfExport('summary')}>
