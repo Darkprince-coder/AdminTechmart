@@ -3,8 +3,8 @@
   "short_name": "TechMart",
   "description": "Electronics retail management — inventory, sales, transfers and reports across all branches.",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone"],
   "orientation": "any",
   "background_color": "#0A1228",
   "theme_color": "#059669",
@@ -70,7 +70,7 @@
   ],
   "shortcuts": [
     {
-      "name": "Sales",
+      "name": "Record Sales",
       "short_name": "Sales",
       "description": "Record and view sales transactions",
       "url": "/admin/sales",
@@ -91,6 +91,5 @@
       "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
     }
   ],
-  "screenshots": [],
   "prefer_related_applications": false
 }
