@@ -532,3 +532,158 @@ export function downloadSalesArchivePdf({
   const ts = new Date().toISOString().slice(0, 10);
   doc.save(safeFilename(['sales-archive', ts, shopLabel]));
 }
+/**
+ * Full inventory stock list — landscape A4.
+ *
+ * Follows the EXACT same pattern as downloadSalesRegisterPdf:
+ *   drawHeader → section → autoTable(baseTable) → addFooters
+ *
+ * Column widths (all explicit, nothing auto-sized):
+ *   Without branch — usable 269mm, total used 263mm (6mm headroom)
+ *   With branch    — usable 269mm, total used 261mm (8mm headroom)
+ *
+ * @param {object} opts
+ * @param {string}   opts.shopLabel          e.g. "All branches" or a branch name
+ * @param {boolean}  opts.showBranchColumn   true when activeShopId === 'all'
+ * @param {Array}    opts.products           filtered products visible on screen
+ *   Each row: { name, category, buy_price, sell_price, quantity, alert_qty, shops:{name} }
+ */
+export function downloadInventoryPdf({ shopLabel, showBranchColumn, products }) {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'landscape' });
+
+  const date  = new Date().toLocaleDateString('en-KE', { dateStyle: 'full' });
+  const count = `${products.length} product${products.length !== 1 ? 's' : ''}`;
+  const sub   = [date, `Scope: ${shopLabel}`, count].join(' · ');
+
+  let y = drawHeader(doc, {
+    title:    'Inventory stock list',
+    subtitle: sub,
+    pill:     'STOCK REPORT',
+  });
+
+  y = section(doc, y + 2, 'All products');
+
+  const head = showBranchColumn
+    ? [['#', 'Product Name', 'Category', 'Branch', 'Buy Price', 'Sell Price', 'Profit / Unit', 'Margin', 'Qty', 'Alert', 'Stock Value', 'Status']]
+    : [['#', 'Product Name', 'Category', 'Buy Price', 'Sell Price', 'Profit / Unit', 'Margin', 'Qty', 'Alert', 'Stock Value', 'Status']];
+
+  const body = products.map((p, i) => {
+    const buy    = p.buy_price  ?? 0;
+    const sell   = p.sell_price ?? 0;
+    const qty    = p.quantity   ?? 0;
+    const alert  = p.alert_qty  ?? 5;
+    const profit = sell - buy;
+    const mg     = sell > 0 ? Math.round((profit / sell) * 100) : 0;
+    const val    = sell * qty;
+    const status = qty === 0 ? 'Out of stock' : qty <= alert ? 'Low stock' : 'In stock';
+
+    return [
+      String(i + 1),
+      p.name || '—',
+      p.category || '—',
+      ...(showBranchColumn ? [p.shops?.name || '—'] : []),
+      fmtKES(buy),
+      fmtKES(sell),
+      fmtKES(profit),
+      `${mg}%`,
+      String(qty),
+      String(alert),
+      fmtKES(val),
+      status,
+    ];
+  });
+
+  // Totals footer row — same style as archive PDF summary row
+  const totalQty = products.reduce((a, p) => a + (p.quantity ?? 0), 0);
+  const totalVal = products.reduce((a, p) => a + (p.sell_price ?? 0) * (p.quantity ?? 0), 0);
+  const blankCols = showBranchColumn ? 8 : 7; // blank cells before Qty
+  const foot = [[
+    '', 'TOTALS',
+    ...Array(blankCols).fill(''),
+    String(totalQty),
+    '',
+    fmtKES(totalVal),
+    '',
+  ]];
+
+  autoTable(doc, {
+    ...baseTable,
+    startY: y,
+    head,
+    body,
+    foot,
+    footStyles: {
+      fillColor:   C.navy,
+      textColor:   C.white,
+      fontStyle:   'bold',
+      fontSize:    8.5,
+    },
+    // Colour-code status and margin cells
+    didParseCell(data) {
+      if (data.section !== 'body') return;
+      const statusIdx = showBranchColumn ? 11 : 10;
+      const marginIdx = showBranchColumn ? 7  : 6;
+      const qtyIdx    = showBranchColumn ? 8  : 7;
+
+      if (data.column.index === statusIdx) {
+        const v = String(data.cell.raw || '');
+        if (v === 'Out of stock') {
+          data.cell.styles.textColor = C.red;
+          data.cell.styles.fontStyle = 'bold';
+        } else if (v === 'Low stock') {
+          data.cell.styles.textColor = C.amber;
+          data.cell.styles.fontStyle = 'bold';
+        } else {
+          data.cell.styles.textColor = C.emeraldDark;
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+
+      if (data.column.index === marginIdx) {
+        const pct = parseInt(data.cell.raw, 10);
+        data.cell.styles.textColor =
+          pct >= 20 ? C.emeraldDark : pct > 0 ? C.amber : C.red;
+      }
+
+      if (data.column.index === qtyIdx) {
+        if (parseInt(data.cell.raw, 10) === 0) {
+          data.cell.styles.textColor = C.red;
+          data.cell.styles.fontStyle = 'bold';
+        }
+      }
+    },
+    columnStyles: showBranchColumn
+      ? {
+          // WITH branch — total 261mm, 8mm headroom
+          0:  { halign: 'center',  cellWidth: 8,  textColor: C.slate400 },
+          1:  { cellWidth: 50,     fontStyle: 'bold' },
+          2:  { cellWidth: 24 },
+          3:  { cellWidth: 28 },
+          4:  { halign: 'right',   cellWidth: 22 },
+          5:  { halign: 'right',   cellWidth: 22 },
+          6:  { halign: 'right',   cellWidth: 22 },
+          7:  { halign: 'center',  cellWidth: 14 },
+          8:  { halign: 'center',  cellWidth: 13, fontStyle: 'bold' },
+          9:  { halign: 'center',  cellWidth: 13 },
+          10: { halign: 'right',   cellWidth: 25, fontStyle: 'bold' },
+          11: { halign: 'center',  cellWidth: 20 },
+        }
+      : {
+          // WITHOUT branch — total 263mm, 6mm headroom
+          0:  { halign: 'center',  cellWidth: 8,  textColor: C.slate400 },
+          1:  { cellWidth: 62,     fontStyle: 'bold' },
+          2:  { cellWidth: 28 },
+          3:  { halign: 'right',   cellWidth: 24 },
+          4:  { halign: 'right',   cellWidth: 24 },
+          5:  { halign: 'right',   cellWidth: 24 },
+          6:  { halign: 'center',  cellWidth: 16 },
+          7:  { halign: 'center',  cellWidth: 14, fontStyle: 'bold' },
+          8:  { halign: 'center',  cellWidth: 14 },
+          9:  { halign: 'right',   cellWidth: 27, fontStyle: 'bold' },
+          10: { halign: 'center',  cellWidth: 22 },
+        },
+  });
+
+  addFooters(doc);
+  doc.save(safeFilename(['inventory', shopLabel, new Date().toISOString().slice(0, 10)]));
+}
