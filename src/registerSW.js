@@ -1,114 +1,180 @@
 /**
- * TechMart Network — Service Worker
+ * TechMart Network — registerSW.js
  *
- * CRITICAL FIX vs previous version:
- *   The old code used cache.addAll([...icons...]) which is ATOMIC —
- *   if ANY single URL returns a 404 (e.g. icons not yet deployed),
- *   the entire SW install fails, Chrome never fires beforeinstallprompt,
- *   and the user sees no install prompt — especially on mobile where
- *   there is no warm browser cache.
+ * This is the BROWSER-SIDE module (runs in the page, not in the SW).
+ * It must NOT contain any `self.addEventListener` calls.
  *
- *   This version caches each URL individually and silently ignores failures,
- *   so the SW always installs and activates regardless of missing assets.
+ * Exports:
+ *   registerSW()        — registers /sw.js as the service worker
+ *   onInstallEvent(cb)  — subscribes to the beforeinstallprompt event
+ *   clearInstallEvent() — clears the stored install event (after accept/dismiss)
+ *   showIOSInstallHint()— shows a one-time hint for iOS/Safari users
  */
 
-const CACHE_NAME = 'techmart-v1';
+// ── Internal state ────────────────────────────────────────────────────────────
 
-// Attempt to cache these on install, but NEVER abort if any fail.
-const PRECACHE_URLS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-];
+let _deferredPrompt = null;           // the BeforeInstallPromptEvent
+const _subscribers  = new Set();      // components listening for the event
 
-// ── Install ───────────────────────────────────────────────────────────────────
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache =>
-      // Cache each URL individually — a single 404 will NOT abort the install.
-      Promise.all(
-        PRECACHE_URLS.map(url =>
-          fetch(url)
-            .then(res => {
-              if (res.ok) return cache.put(url, res);
-            })
-            .catch(() => { /* silently ignore — SW still installs */ })
-        )
-      )
-    ).then(() => self.skipWaiting())
-  );
+// ── beforeinstallprompt — capture as early as possible ───────────────────────
+//
+// This listener is attached at module-evaluation time (before React even loads)
+// because ES module imports are hoisted and run in declaration order.
+// index.js imports this module FIRST to guarantee we never miss the event.
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();   // stop the browser's default mini-infobar
+
+  // Don't show if the user already dismissed this session
+  if (localStorage.getItem('tm_pwa_dismissed') === '1') return;
+
+  _deferredPrompt = e;
+  _subscribers.forEach(cb => cb(e));
 });
 
-// ── Activate ──────────────────────────────────────────────────────────────────
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(
-        keys
-          .filter(k => k !== CACHE_NAME)
-          .map(k  => caches.delete(k))
-      ))
-      .then(() => self.clients.claim())
-  );
+// Clear the dismissed flag if the prompt fires again (e.g. after uninstall)
+window.addEventListener('beforeinstallprompt', () => {
+  // If we reach here it means the app is installable again — clear old flag
+  localStorage.removeItem('tm_pwa_dismissed');
+}, { once: false });   // we handle the flag reset in the first listener above
+
+// Track successful install
+window.addEventListener('appinstalled', () => {
+  _deferredPrompt = null;
+  localStorage.setItem('tm_pwa_dismissed', '1');
+  _subscribers.forEach(cb => cb(null));
 });
 
-// ── Fetch ─────────────────────────────────────────────────────────────────────
-self.addEventListener('fetch', event => {
-  const { request } = event;
-  const url = new URL(request.url);
+// ── Public API ────────────────────────────────────────────────────────────────
 
-  // Only handle GET requests from our own origin
-  if (request.method !== 'GET') return;
-  if (url.origin !== self.location.origin) return;
-  if (url.protocol === 'chrome-extension:') return;
+/**
+ * Register /sw.js as the service worker.
+ * Safe to call multiple times — skips if SW is already registered.
+ */
+export function registerSW() {
+  if (!('serviceWorker' in navigator)) return;
 
-  // Navigation requests (HTML pages) — network first, fall back to cached shell
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(request, copy));
-          return res;
-        })
-        .catch(() => caches.match('/index.html').then(r => r || caches.match('/')))
-    );
-    return;
-  }
+  const doRegister = async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
 
-  // Static assets — cache first, network fallback
-  const isStatic = /\.(js|css|png|jpg|jpeg|svg|webp|woff2?|ttf|ico)(\?.*)?$/.test(url.pathname);
-  if (isStatic) {
-    event.respondWith(
-      caches.match(request).then(cached => {
-        if (cached) return cached;
-        return fetch(request).then(res => {
-          if (res && res.ok && res.type === 'basic') {
-            const copy = res.clone();
-            caches.open(CACHE_NAME).then(c => c.put(request, copy));
+      // If there's a waiting SW (new version deployed), activate it immediately
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New SW waiting — tell it to skip waiting
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
           }
-          return res;
         });
-      })
-    );
-    return;
+      });
+    } catch (err) {
+      console.error('[TechMart SW] Registration failed:', err);
+    }
+  };
+
+  if (document.readyState === 'complete') {
+    doRegister();
+  } else {
+    window.addEventListener('load', doRegister, { once: true });
   }
+}
 
-  // Everything else — network first
-  event.respondWith(
-    fetch(request)
-      .then(res => {
-        if (res && res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(request, copy));
-        }
-        return res;
-      })
-      .catch(() => caches.match(request))
-  );
-});
+/**
+ * Subscribe to BeforeInstallPromptEvent updates.
+ * The callback receives the event object, or null when it has been cleared.
+ * Returns an unsubscribe function.
+ *
+ * @param {(event: BeforeInstallPromptEvent | null) => void} cb
+ * @returns {() => void} unsubscribe
+ */
+export function onInstallEvent(cb) {
+  _subscribers.add(cb);
 
-// ── Message ───────────────────────────────────────────────────────────────────
-self.addEventListener('message', event => {
-  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
-});
+  // Fire immediately if we already have a captured event
+  if (_deferredPrompt) cb(_deferredPrompt);
+
+  return () => _subscribers.delete(cb);
+}
+
+/**
+ * Clear the stored install event and notify subscribers.
+ * Call this after the user accepts or permanently dismisses the prompt.
+ */
+export function clearInstallEvent() {
+  _deferredPrompt = null;
+  _subscribers.forEach(cb => cb(null));
+}
+
+/**
+ * Show a one-time "Add to Home Screen" guide for iOS/Safari.
+ * Safari does not support beforeinstallprompt, so we show a manual hint.
+ *
+ * Conditions for showing:
+ *   - iOS device (iPhone/iPad)
+ *   - Running in Safari (not already installed as a PWA)
+ *   - Not already shown this session
+ */
+export function showIOSInstallHint() {
+  const isIOS        = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isSafari     = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  const alreadySeen  = sessionStorage.getItem('tm_ios_hint_shown') === '1';
+
+  if (!isIOS || !isSafari || isStandalone || alreadySeen) return;
+
+  sessionStorage.setItem('tm_ios_hint_shown', '1');
+
+  // Create a simple non-blocking banner
+  const banner = document.createElement('div');
+  banner.setAttribute('role', 'status');
+  banner.setAttribute('aria-live', 'polite');
+  banner.style.cssText = `
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 9999;
+    background: #111827;
+    color: #F1F5F9;
+    border-top: 1px solid #1E293B;
+    border-radius: 20px 20px 0 0;
+    padding: 18px 20px calc(18px + env(safe-area-inset-bottom, 0px));
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 -12px 40px rgba(0,0,0,.5);
+    animation: _tm_ios_up .3s cubic-bezier(0.34,1.3,0.64,1) forwards;
+  `;
+
+  banner.innerHTML = `
+    <style>
+      @keyframes _tm_ios_up {
+        from { opacity:0; transform:translateY(100%); }
+        to   { opacity:1; transform:translateY(0);    }
+      }
+    </style>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <strong style="font-size:15px;">Install TechMart</strong>
+      <button id="_tm_ios_close" aria-label="Dismiss"
+        style="background:none;border:none;color:#64748B;font-size:22px;line-height:1;
+               cursor:pointer;padding:0 4px;">×</button>
+    </div>
+    <p style="margin:0;color:#94A3B8;">
+      Tap the <strong style="color:#F1F5F9;">Share</strong> button
+      <span style="font-size:16px;">⎙</span> below, then choose
+      <strong style="color:#059669;">"Add to Home Screen"</strong>
+      to install this app.
+    </p>
+  `;
+
+  document.body.appendChild(banner);
+
+  const close = () => {
+    if (banner.parentNode) banner.parentNode.removeChild(banner);
+  };
+
+  banner.querySelector('#_tm_ios_close').addEventListener('click', close);
+
+  // Auto-dismiss after 12 seconds
+  setTimeout(close, 12000);
+}
