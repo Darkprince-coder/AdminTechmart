@@ -293,51 +293,52 @@ export default function InventoryPage() {
                    bottom = category chips (wraps freely) */}
       <div className="mb-md" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-        {/* Row 1 — search + PDF buttons + Add (never wraps off-screen) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-          <div className="search-bar" style={{ flex: 1, minWidth: 180, maxWidth: 320 }}>
-            <svg className="search-icon" width="15" height="15" viewBox="0 0 24 24"
-              fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-            </svg>
-            <input type="text" placeholder="Search by name, category or branch…"
-              value={search} onChange={e => setSearch(e.target.value)} />
-          </div>
+       {/* Row 1 — search + PDF buttons + Add */}
+<div className="inv-toolbar-row-1">
+  <div className="search-bar inv-search-container">
+    <svg className="search-icon" width="15" height="15" viewBox="0 0 24 24"
+      fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+    </svg>
+    <input type="text" placeholder="Search by name, category or branch…"
+      value={search} onChange={e => setSearch(e.target.value)} />
+  </div>
 
-          {/* PDF buttons — always visible, never buried by category chips */}
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm inv-export-pdf-btn"
-            onClick={handleExportInventoryPdf}
-            disabled={visible.length === 0}
-            title={visible.length === 0 ? 'No products to export' : `Export ${visible.length} product${visible.length !== 1 ? 's' : ''} to PDF`}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-              <line x1="16" y1="13" x2="8" y2="13"/>
-              <line x1="16" y1="17" x2="8" y2="17"/>
-            </svg>
-            Inventory PDF
-          </button>
+  <div className="inv-action-buttons">
+    <button
+      type="button"
+      className="btn btn-secondary btn-sm inv-export-pdf-btn"
+      onClick={handleExportInventoryPdf}
+      disabled={visible.length === 0}
+      title={visible.length === 0 ? 'No products to export' : `Export ${visible.length} product${visible.length !== 1 ? 's' : ''} to PDF`}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/>
+        <line x1="16" y1="17" x2="8" y2="17"/>
+      </svg>
+      Inventory PDF
+    </button>
 
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm inv-export-pdf-btn"
-            onClick={handleExportReorderPdf}
-            disabled={lowStockExportRows.length === 0}
-            title={lowStockExportRows.length === 0 ? 'No low or out-of-stock items' : 'Download PDF for suppliers'}
-          >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
-            Reorder PDF
-          </button>
+    <button
+      type="button"
+      className="btn btn-secondary btn-sm inv-export-pdf-btn"
+      onClick={handleExportReorderPdf}
+      disabled={lowStockExportRows.length === 0}
+      title={lowStockExportRows.length === 0 ? 'No low or out-of-stock items' : 'Download PDF for suppliers'}
+    >
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Reorder PDF
+    </button>
 
-          <button className="btn btn-primary btn-sm" onClick={openAdd}>+ Add product</button>
-        </div>
+    <button className="btn btn-primary btn-sm" onClick={openAdd}>+ Add product</button>
+  </div>
+</div>
 
         {/* Row 2 — category filter chips (wraps freely, never hides buttons above) */}
         <div className="inv-cat-filters">

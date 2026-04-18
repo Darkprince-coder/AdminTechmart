@@ -142,3 +142,47 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+
+
+/* Container for the search and buttons */
+.inv-toolbar-row-1 {
+  display: flex;
+  flex-direction: column; /* Stack by default (mobile) */
+  gap: 12px;
+  width: 100%;
+}
+
+.inv-search-container {
+  width: 100%; /* Search takes full width on mobile */
+  max-width: none !important;
+}
+
+/* Group buttons so they wrap together, separate from the search bar */
+.inv-action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* On Desktop (Screens wider than 768px) */
+@media (min-width: 768px) {
+  .inv-toolbar-row-1 {
+    flex-direction: row; /* Side-by-side on desktop */
+    align-items: center;
+  }
+
+  .inv-search-container {
+    flex: 1;
+    max-width: 320px !important;
+  }
+
+  .inv-action-buttons {
+    flex-wrap: nowrap; /* Keep buttons on one line on desktop */
+  }
+}
+
+/* Ensure buttons don't shrink too much */
+.inv-export-pdf-btn {
+  white-space: nowrap;
+}
