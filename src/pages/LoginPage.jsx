@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import TechMartIcon from '../components/TechMartIcon';
 import '../styles/login.css';
 
 export default function LoginPage() {
@@ -19,7 +20,7 @@ export default function LoginPage() {
   const [portalError, setPortalError] = useState('');
   const [loading,  setLoading]  = useState(false);
 
-  const role = searchParams.get('role') || 'admin'; // default to admin
+  const role = searchParams.get('role') || 'admin';
 
   useEffect(() => {
     if (!session || !profile) return;
@@ -95,11 +96,7 @@ export default function LoginPage() {
       <div className="login-left">
         <div className="login-left-brand">
           <div className="login-left-logo">
-            <svg viewBox="0 0 24 24">
-              <rect x="2" y="3" width="20" height="14" rx="2"/>
-              <path d="M8 21h8M12 17v4"/>
-              <path d="M7 8h2M11 8h6M7 12h4M15 12h2"/>
-            </svg>
+            <TechMartIcon size={22} color="#10B981" />
           </div>
           <div>
             <div className="login-left-brand-name">TechMart {isAdmin ? 'Admin' : 'Branch'}</div>

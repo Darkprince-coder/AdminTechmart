@@ -10,6 +10,7 @@ import { useShop } from '../context/ShopContext';
 import { useTheme } from '../context/ThemeContext';
 import { useAuditNavBadge } from '../hooks/useAuditNavBadge';
 import { getInitials } from '../lib/utils';
+import TechMartIcon from './TechMartIcon';
 import '../styles/admin-layout.css';
 
 const NAV_ITEMS = [
@@ -61,9 +62,7 @@ export default function AdminLayout({ children }) {
           {/* Brand */}
           <div className="sidebar-brand">
             <div className="sidebar-brand-icon">
-              <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/>
-                <path d="M8 21h8M12 17v4"/><path d="M7 8h2M11 8h6M7 12h4M15 12h2"/>
-              </svg>
+              <TechMartIcon size={22} color="var(--emerald-mid)" />
             </div>
             <div>
               <div className="sidebar-brand-name">TechMart Admin</div>

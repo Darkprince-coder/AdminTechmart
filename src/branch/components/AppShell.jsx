@@ -1,8 +1,9 @@
-// src/components/AppShell.jsx
+// src/branch/components/AppShell.jsx
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { getInitials } from '../lib/utils';
+import TechMartIcon from '../../components/TechMartIcon';
 
 const NAV_ITEMS = [
   {
@@ -69,15 +70,11 @@ export default function AppShell({ activePage, onNavigate, children }) {
   return (
     <div className="app-shell">
 
-      {/* ===== SIDEBAR (desktop) — layout matches TechMart admin ===== */}
+      {/* ===== SIDEBAR (desktop) ===== */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <div className="sidebar-brand-icon">
-            <svg viewBox="0 0 24 24">
-              <rect x="2" y="3" width="20" height="14" rx="2"/>
-              <path d="M8 21h8M12 17v4"/>
-              <path d="M7 8h2M11 8h6M7 12h4M15 12h2"/>
-            </svg>
+            <TechMartIcon size={22} color="var(--emerald-mid, #10B981)" />
           </div>
           <div>
             <div className="sidebar-brand-name">Ezekii Electronics</div>
@@ -133,11 +130,7 @@ export default function AppShell({ activePage, onNavigate, children }) {
         <header className="topbar">
           <div className="topbar-brand">
             <div className="topbar-brand-icon">
-              <svg viewBox="0 0 24 24">
-                <rect x="2" y="3" width="20" height="14" rx="2"/>
-                <path d="M8 21h8M12 17v4"/>
-                <path d="M7 8h2M11 8h6M7 12h4M15 12h2"/>
-              </svg>
+              <TechMartIcon size={20} color="var(--brand, #1A6B4A)" />
             </div>
             <div>
               <div className="topbar-shop-name">Ezekii Electronics</div>
@@ -158,7 +151,7 @@ export default function AppShell({ activePage, onNavigate, children }) {
           </div>
         </header>
 
-        {/* Desktop topbar (inside main area) */}
+        {/* Desktop topbar */}
         <header className="desktop-topbar">
           <div>
             <div className="dt-title">{meta.title}</div>
@@ -214,7 +207,7 @@ export default function AppShell({ activePage, onNavigate, children }) {
   );
 }
 
-/* ---- Icon helpers ---- */
+/* ── Icon helpers ── */
 function SunIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -241,33 +234,22 @@ function MoonIcon() {
   );
 }
 
-/* Toggle switch — matches AdminLayout ThemeSwitch */
 function ThemeToggleSwitch({ isDark, onToggle }) {
   return (
     <button
       type="button"
       onClick={onToggle}
       style={{
-        width: 40,
-        height: 22,
-        borderRadius: 11,
-        border: 'none',
-        cursor: 'pointer',
+        width: 40, height: 22, borderRadius: 11, border: 'none', cursor: 'pointer',
         background: isDark ? '#10B981' : 'rgba(148,163,184,.25)',
-        position: 'relative',
-        transition: 'background .2s',
-        flexShrink: 0,
+        position: 'relative', transition: 'background .2s', flexShrink: 0,
       }}
     >
       <span
         style={{
-          position: 'absolute',
-          top: 3,
+          position: 'absolute', top: 3,
           left: isDark ? 21 : 3,
-          width: 16,
-          height: 16,
-          borderRadius: '50%',
-          background: '#fff',
+          width: 16, height: 16, borderRadius: '50%', background: '#fff',
           transition: 'left .2s cubic-bezier(.4,0,.2,1)',
           boxShadow: '0 1px 4px rgba(0,0,0,.3)',
         }}

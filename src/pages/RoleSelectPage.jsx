@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import TechMartIcon from '../components/TechMartIcon';
 import '../styles/role-select.css';
 
 function ChevronRight() {
@@ -67,11 +68,7 @@ export default function RoleSelectPage() {
         <div className="role-select-card">
           <div className="role-select-brand">
             <div className="role-select-brand-icon" aria-hidden>
-              <svg viewBox="0 0 24 24">
-                <rect x="2" y="3" width="20" height="14" rx="2" />
-                <path d="M8 21h8M12 17v4" />
-                <path d="M7 8h2M11 8h6M7 12h4M15 12h2" />
-              </svg>
+              <TechMartIcon size={24} color="var(--emerald-mid, #10B981)" />
             </div>
             <div className="role-select-brand-text">
               <div className="role-select-brand-name">TechMart</div>
