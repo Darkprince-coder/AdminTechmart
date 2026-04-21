@@ -1,8 +1,9 @@
 // src/branch/components/AppShell.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { getInitials } from '../lib/utils';
+import { supabase } from '../lib/supabase';
 import TechMartIcon from '../../components/TechMartIcon';
 
 const NAV_ITEMS = [
@@ -64,8 +65,26 @@ export default function AppShell({ activePage, onNavigate, children }) {
   const { isDark, toggleTheme }       = useTheme();
   const [confirmSignOut, setConfirmSignOut] = useState(false);
 
-  const email    = session?.user?.email || '';
-  const meta     = PAGE_META[activePage] || { title: 'Ezekii Electronics', sub: '' };
+  // ── Fetch the manager's shop name and location from the database ──────────
+  // profile.shop_id is set when the admin assigns a branch to this manager.
+  // We fetch it here because the branch app does not mount ShopProvider.
+  const [shop, setShop] = useState(null);
+
+  useEffect(() => {
+    if (!profile?.shop_id) return;
+    supabase
+      .from('shops')
+      .select('name, location')
+      .eq('id', profile.shop_id)
+      .single()
+      .then(({ data }) => { if (data) setShop(data); });
+  }, [profile?.shop_id]);
+
+  const shopName     = shop?.name     || 'Branch';
+  const shopLocation = shop?.location || '';
+
+  const email = session?.user?.email || '';
+  const meta  = PAGE_META[activePage] || { title: shopName, sub: '' };
 
   return (
     <div className="app-shell">
@@ -77,8 +96,9 @@ export default function AppShell({ activePage, onNavigate, children }) {
             <TechMartIcon size={22} color="var(--emerald-mid, #10B981)" />
           </div>
           <div>
-            <div className="sidebar-brand-name">Ezekii Electronics</div>
-            <div className="sidebar-brand-sub">Isinet Branch</div>
+            {/* Dynamic shop name and location — never hardcoded */}
+            <div className="sidebar-brand-name">{shopName}</div>
+            <div className="sidebar-brand-sub">{shopLocation}</div>
           </div>
         </div>
 
@@ -133,8 +153,9 @@ export default function AppShell({ activePage, onNavigate, children }) {
               <TechMartIcon size={20} color="var(--brand, #1A6B4A)" />
             </div>
             <div>
-              <div className="topbar-shop-name">Ezekii Electronics</div>
-              <div className="topbar-shop-sub">Isinet</div>
+              {/* Dynamic shop name — never hardcoded */}
+              <div className="topbar-shop-name">{shopName}</div>
+              {shopLocation && <div className="topbar-shop-sub">{shopLocation}</div>}
             </div>
           </div>
           <div className="topbar-actions">

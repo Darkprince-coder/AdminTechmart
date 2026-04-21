@@ -11,7 +11,7 @@
     <meta name="author" content="TechMart" />
     <meta name="robots" content="noindex, nofollow" />
 
-    <!-- ── Theme colour (browser chrome & taskbar) ───────────────────────── -->
+    <!-- ── Theme colour ──────────────────────────────────────────────────── -->
     <meta name="theme-color" content="#00C48C" />
     <meta name="theme-color" content="#080E1C" media="(prefers-color-scheme: dark)" />
     <meta name="background-color" content="#080E1C" />
@@ -20,6 +20,15 @@
     <link rel="manifest" href="/manifest.json" />
 
     <!-- ── Favicons ──────────────────────────────────────────────────────── -->
+    <!--
+      The SVG favicon is listed FIRST and uses a data-URI.
+      Browsers that support SVG favicons use this at any resolution and ignore
+      the PNG links below. Using a data-URI bypasses the browser's favicon
+      disk cache, so the new T-Chart mark appears immediately without needing
+      a hard-refresh or cache-clear from the user.
+    -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='24' y='37' width='8' height='10' rx='2' fill='%2300C48C'/><rect x='35' y='29' width='8' height='18' rx='2' fill='%2300C48C'/><rect x='46' y='21' width='8' height='26' rx='2' fill='%2300C48C'/><rect x='57' y='13' width='8' height='34' rx='2' fill='%2300C48C'/><rect x='68' y='5' width='8' height='42' rx='2' fill='%2300C48C'/><rect x='20' y='47' width='60' height='5' rx='2' fill='%2300C48C'/><rect x='46' y='52' width='8' height='33' rx='2' fill='%2300C48C'/></svg>" />
+    <!-- PNG fallbacks for older browsers -->
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
     <link rel="shortcut icon" href="/icons/favicon-32x32.png" />
@@ -35,7 +44,7 @@
     <link rel="apple-touch-icon" sizes="96x96"   href="/icons/icon-96x96.png" />
     <link rel="apple-touch-icon" sizes="72x72"   href="/icons/icon-72x72.png" />
 
-    <!-- Apple splash screens (portrait) — covers common iPhone sizes -->
+    <!-- Apple splash screens (portrait) -->
     <link rel="apple-touch-startup-image"
       media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)"
       href="/icons/icon-512x512.png" />
@@ -61,11 +70,11 @@
     <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
     <meta name="msapplication-config" content="none" />
 
-    <!-- ── Open Graph (for sharing) ──────────────────────────────────────── -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="TechMart Network" />
+    <!-- ── Open Graph ────────────────────────────────────────────────────── -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:title"       content="TechMart Network" />
     <meta property="og:description" content="Electronics retail management across all branches." />
-    <meta property="og:image" content="/icons/icon-512x512.png" />
+    <meta property="og:image"       content="/icons/icon-512x512.png" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run TechMart Network.</noscript>
