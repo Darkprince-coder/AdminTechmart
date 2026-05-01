@@ -150,8 +150,7 @@ export default function SalesPage({ onNavigate }) {
     quantity:      +quantity,
     unit_price:    +unit_price,
     buy_price:     product.buy_price,
-    total_amount:  +unit_price * +quantity,                          // ✅ ADD THIS
-    profit:        (+unit_price - product.buy_price) * +quantity,   // ✅ ADD THIS
+    // total_amount and profit are generated columns — DB computes them automatically
   })
       .select('id, product_name, customer_name, quantity, unit_price, buy_price, total_amount, profit, created_at')
       .single();
