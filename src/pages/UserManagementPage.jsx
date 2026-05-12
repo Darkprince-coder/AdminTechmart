@@ -170,9 +170,9 @@ export default function UserManagementPage() {
               {shops.length} branch{shops.length!==1?'es':''}
             </span>
           </span>
-          <button className="btn btn-secondary btn-sm" onClick={openAddShop}>
+          {/* <button className="btn btn-secondary btn-sm" onClick={openAddShop}>
             + Add branch
-          </button>
+          </button> */}
         </div>
 
         {/* Add / Edit shop form */}
