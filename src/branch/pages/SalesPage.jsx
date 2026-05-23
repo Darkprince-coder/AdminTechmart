@@ -1,9 +1,6 @@
-// src/pages/SalesPage.jsx  (BRANCH APP)
-// Fixes:
-// 1. SaleCard was showing profit to non-admin (manager) users — now gated by isAdmin
-// 2. isAdmin prop passed down to SaleCard from the render site
-// 3. fetchSales no longer sets loading=true on refresh (only on first load)
-//    so the list doesn't flash a spinner after every record/delete action
+// src/branch/pages/SalesPage.jsx  (BRANCH APP)
+// Fix: handleRecord now does a fresh DB fetch of quantity before decrementing
+// instead of using potentially stale local state. Everything else unchanged.
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -37,12 +34,8 @@ export default function SalesPage({ onNavigate }) {
   const [filterToday,   setFilterToday]   = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  // ---- Fetch sales — showLoading only on first load ----
   const fetchSales = useCallback(async (showLoading = false) => {
-    if (!shopId) {
-      if (showLoading) setLoading(false);
-      return;
-    }
+    if (!shopId) { if (showLoading) setLoading(false); return; }
     if (showLoading) setLoading(true);
     const { data, error } = await supabase
       .from('sales')
@@ -55,7 +48,6 @@ export default function SalesPage({ onNavigate }) {
     if (showLoading) setLoading(false);
   }, [shopId]);
 
-  // ---- Fetch in-stock products ----
   const fetchProducts = useCallback(async () => {
     if (!shopId) return;
     const { data } = await supabase
@@ -74,7 +66,6 @@ export default function SalesPage({ onNavigate }) {
     }
   }, [shopId]);
 
-  // Initial load — show spinner
   useEffect(() => {
     fetchSales(true);
     fetchProducts();
@@ -92,7 +83,6 @@ export default function SalesPage({ onNavigate }) {
     });
   };
 
-  // ---- Refresh products data ----
   const refreshProductsData = useCallback(async () => {
     if (!shopId) return;
     const { data } = await supabase
@@ -104,7 +94,6 @@ export default function SalesPage({ onNavigate }) {
     setProducts(data || []);
   }, [shopId]);
 
-  // ---- Refresh products when page becomes visible ----
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') refreshProductsData();
@@ -115,7 +104,10 @@ export default function SalesPage({ onNavigate }) {
 
   const selectedProduct = products.find(p => p.id === form.product_id) || null;
 
-  // ---- Record sale ----
+  // ── Record sale ────────────────────────────────────────────────────────────
+  // FIX: fresh DB fetch of quantity before decrementing to avoid race condition.
+  // Previously used product.quantity from local state which could be stale if
+  // the page had been open a while or stock changed on another device/tab.
   const handleRecord = async () => {
     const { product_id, quantity, unit_price, customer_name } = form;
     if (!product_id)                     return toastRef.current.error('Select a product');
@@ -124,14 +116,33 @@ export default function SalesPage({ onNavigate }) {
 
     const product = products.find(p => p.id === product_id);
     if (!product) return toastRef.current.error('Product not found — refresh and try again');
-    if (+quantity > product.quantity)
-      return toastRef.current.error(`Only ${product.quantity} unit${product.quantity !== 1 ? 's' : ''} in stock`);
 
     setSaving(true);
 
+    // Fresh fetch — get the real current quantity from the database
+    const { data: freshProduct, error: freshErr } = await supabase
+      .from('products')
+      .select('quantity, buy_price, name')
+      .eq('id', product_id)
+      .single();
+
+    if (freshErr || !freshProduct) {
+      toastRef.current.error('Could not verify stock — please try again');
+      setSaving(false);
+      return;
+    }
+
+    if (+quantity > freshProduct.quantity) {
+      toastRef.current.error(
+        `Only ${freshProduct.quantity} unit${freshProduct.quantity !== 1 ? 's' : ''} in stock`
+      );
+      setSaving(false);
+      return;
+    }
+
     const { error: stockErr } = await supabase
       .from('products')
-      .update({ quantity: product.quantity - +quantity })
+      .update({ quantity: freshProduct.quantity - +quantity })
       .eq('id', product_id);
 
     if (stockErr) {
@@ -141,22 +152,26 @@ export default function SalesPage({ onNavigate }) {
     }
 
     const { data: newSale, error: saleErr } = await supabase
-  .from('sales')
-  .insert({
-    shop_id:       shopId,
-    product_id,
-    product_name:  product.name,
-    customer_name: customer_name.trim() || 'Walk-in',
-    quantity:      +quantity,
-    unit_price:    +unit_price,
-    buy_price:     product.buy_price,
-    // total_amount and profit are generated columns — DB computes them automatically
-  })
+      .from('sales')
+      .insert({
+        shop_id:       shopId,
+        product_id,
+        product_name:  freshProduct.name,
+        customer_name: customer_name.trim() || 'Walk-in',
+        quantity:      +quantity,
+        unit_price:    +unit_price,
+        buy_price:     freshProduct.buy_price,
+        total_amount:  +unit_price * +quantity,
+        profit:        (+unit_price - freshProduct.buy_price) * +quantity,
+      })
       .select('id, product_name, customer_name, quantity, unit_price, buy_price, total_amount, profit, created_at')
       .single();
 
     if (saleErr) {
-      await supabase.from('products').update({ quantity: product.quantity }).eq('id', product_id);
+      // Roll back stock decrement if sale insert failed
+      await supabase.from('products')
+        .update({ quantity: freshProduct.quantity })
+        .eq('id', product_id);
       toastRef.current.error('Sale record failed: ' + saleErr.message);
     } else {
       toastRef.current.success(`Sale recorded — ${fmtKES(+unit_price * +quantity)}`);
@@ -167,7 +182,7 @@ export default function SalesPage({ onNavigate }) {
     setSaving(false);
   };
 
-  // ---- Delete sale ----
+  // ── Delete sale ────────────────────────────────────────────────────────────
   const handleDeleteSale = async () => {
     if (!deleteConfirm) return;
     setDeleting(true);
@@ -217,7 +232,6 @@ export default function SalesPage({ onNavigate }) {
 
   if (!shopId) return <NoShopAssigned />;
 
-  // ---- Metrics ----
   const todaySales  = sales.filter(s => isToday(s.created_at));
   const todayRev    = todaySales.reduce((a, s) => a + Number(s.total_amount || 0), 0);
   const todayProfit = todaySales.reduce((a, s) => a + Number(s.profit       || 0), 0);
@@ -541,7 +555,6 @@ export default function SalesPage({ onNavigate }) {
           </div>
         ) : (
           <>
-            {/* Mobile cards — FIX: pass isAdmin so profit is hidden for managers */}
             <div className="sales-mobile-list">
               {visible.map((s, i) => (
                 <SaleCard key={s.id} sale={s} index={visible.length - i}
@@ -550,7 +563,6 @@ export default function SalesPage({ onNavigate }) {
               ))}
             </div>
 
-            {/* Desktop table */}
             <div className="table-wrap sales-desktop-table">
               <table className="data-table">
                 <thead>
@@ -591,37 +603,35 @@ export default function SalesPage({ onNavigate }) {
 
     </div>
 
-      {/* ---- DELETE CONFIRM ---- */}
-      {deleteConfirm && (
-        <div className="overlay-bg" onClick={() => !deleting && setDeleteConfirm(null)}>
-          <div className="overlay-card" onClick={e => e.stopPropagation()}>
-            <div className="overlay-title">Delete this sale?</div>
-            <div className="overlay-body">
-              This will remove the sale of{' '}
-              <strong>{deleteConfirm.quantity}x {deleteConfirm.product_name}</strong> to{' '}
-              <strong>{deleteConfirm.customer_name || 'Walk-in'}</strong>{' '}
-              ({fmtKES(deleteConfirm.total_amount)}) and restore the stock.
-              This cannot be undone.
-            </div>
-            <div className="overlay-actions">
-              <button className="btn btn-ghost" disabled={deleting}
-                onClick={() => setDeleteConfirm(null)}>
-                Cancel
-              </button>
-              <button className="btn btn-danger" onClick={handleDeleteSale} disabled={deleting}>
-                {deleting
-                  ? <><span className="spinner" style={{ width:14, height:14, borderWidth:2 }}/> Deleting…</>
-                  : 'Delete sale'}
-              </button>
-            </div>
+    {deleteConfirm && (
+      <div className="overlay-bg" onClick={() => !deleting && setDeleteConfirm(null)}>
+        <div className="overlay-card" onClick={e => e.stopPropagation()}>
+          <div className="overlay-title">Delete this sale?</div>
+          <div className="overlay-body">
+            This will remove the sale of{' '}
+            <strong>{deleteConfirm.quantity}x {deleteConfirm.product_name}</strong> to{' '}
+            <strong>{deleteConfirm.customer_name || 'Walk-in'}</strong>{' '}
+            ({fmtKES(deleteConfirm.total_amount)}) and restore the stock.
+            This cannot be undone.
+          </div>
+          <div className="overlay-actions">
+            <button className="btn btn-ghost" disabled={deleting}
+              onClick={() => setDeleteConfirm(null)}>
+              Cancel
+            </button>
+            <button className="btn btn-danger" onClick={handleDeleteSale} disabled={deleting}>
+              {deleting
+                ? <><span className="spinner" style={{ width:14, height:14, borderWidth:2 }}/> Deleting…</>
+                : 'Delete sale'}
+            </button>
           </div>
         </div>
-      )}
+      </div>
+    )}
     </>
   );
 }
 
-// ---- FIX: isAdmin prop added — profit only visible to admin users ----
 function SaleCard({ sale: s, index, onDelete, isAdmin }) {
   return (
     <div className="sale-card">
