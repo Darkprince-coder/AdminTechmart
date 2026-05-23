@@ -1,7 +1,6 @@
-// src/branch/pages/InventoryPage.jsx  (BRANCH APP)
-// Fix: handleQuickSell now does a fresh DB fetch of quantity before
-// decrementing instead of using the prop value which may be stale.
-// Everything else unchanged from original.
+// src/pages/InventoryPage.jsx  (BRANCH APP)
+// Schema columns used:
+//   products: id, shop_id, name, category, buy_price, sell_price, quantity, alert_qty
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
@@ -12,6 +11,7 @@ import { fmtKES, stockStatus, stockPct, margin } from '../lib/utils';
 import NoShopAssigned from '../components/NoShopAssigned';
 import '../styles/inventory-scoped.css';
 
+// Ezekii Electronics Isinet — tailored category list
 const PRESET_CATEGORIES = [
   'Phones',
   'Phone Accessories',
@@ -54,8 +54,13 @@ export default function InventoryPage() {
   const [showForm,      setShowForm]      = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
+  // ---- Fetch ----
   const fetchProducts = useCallback(async () => {
-    if (!shopId) { setLoading(false); setFetchError(false); return; }
+    if (!shopId) {
+      setLoading(false);
+      setFetchError(false);
+      return;
+    }
     setLoading(true);
     setFetchError(false);
     const { data, error } = await supabase
@@ -74,13 +79,16 @@ export default function InventoryPage() {
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
+  // ---- Derived stats ----
   const stockValue   = products.reduce((a, p) => a + (p.sell_price || 0) * (p.quantity || 0), 0);
   const totalUnits   = products.reduce((a, p) => a + (p.quantity || 0), 0);
   const lowItems     = products.filter(p => (p.quantity || 0) > 0 && (p.quantity || 0) <= (p.alert_qty || 5));
   const oosItems     = products.filter(p => (p.quantity || 0) === 0);
 
+  // Only show categories that actually exist in inventory
   const usedCategories = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
 
+  // ---- Filtered list ----
   const visible = products.filter(p => {
     const q = search.toLowerCase();
     const matchSearch = !search ||
@@ -90,6 +98,7 @@ export default function InventoryPage() {
     return matchSearch && matchCat;
   });
 
+  // ---- Form handlers ----
   const handleChange = e => {
     const { name, value, type, checked } = e.target;
     setForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
@@ -125,6 +134,7 @@ export default function InventoryPage() {
     setForm(EMPTY_FORM);
   };
 
+  // ---- Save ----
   const handleSave = async () => {
     const { name, category, useCustom, customCategory,
             buy_price, sell_price, quantity, alert_qty } = form;
@@ -132,8 +142,8 @@ export default function InventoryPage() {
     if (!name.trim())                    return toastRef.current.error('Product name is required');
     if (!sell_price || +sell_price <= 0) return toastRef.current.error('Enter a valid sell price');
     if (isAdmin) {
-      if (buy_price === '' || +buy_price < 0) return toastRef.current.error('Enter a valid buy price');
-      if (+sell_price < +buy_price)           return toastRef.current.error('Sell price is less than buy price');
+      if (buy_price === '' || +buy_price < 0)   return toastRef.current.error('Enter a valid buy price');
+      if (+sell_price < +buy_price)        return toastRef.current.error('Sell price is less than buy price — check your prices');
     }
     if (quantity === '' || +quantity < 0) return toastRef.current.error('Enter a valid quantity');
 
@@ -152,6 +162,7 @@ export default function InventoryPage() {
       shop_id:    shopId,
     };
 
+    // Remove undefined fields for updates
     if (editId) {
       Object.keys(payload).forEach(key => payload[key] === undefined && delete payload[key]);
     }
@@ -170,6 +181,7 @@ export default function InventoryPage() {
     setSaving(false);
   };
 
+  // ---- Delete ----
   const confirmDelete = async () => {
     if (!deleteConfirm) return;
     const { error } = await supabase.from('products').delete().eq('id', deleteConfirm.id);
@@ -193,33 +205,15 @@ export default function InventoryPage() {
     setDeleteConfirm(null);
   };
 
-  // ── Quick sell ─────────────────────────────────────────────────────────────
-  // FIX: fresh DB fetch before decrementing to avoid race condition.
-  // Previously used p.quantity from the product prop which could be stale
-  // if the list hadn't refreshed since the last sale was recorded.
+  // ---- Quick sell (1 unit, walk-in) ----
   const handleQuickSell = async p => {
+    if ((p.quantity || 0) < 1) return toastRef.current.error('Out of stock!');
     setQuickSellId(p.id);
-
-    // Get the real current quantity from the database
-    const { data: freshProduct, error: freshErr } = await supabase
-      .from('products')
-      .select('quantity, sell_price, buy_price, name')
-      .eq('id', p.id)
-      .single();
-
-    if (freshErr || !freshProduct) {
-      setQuickSellId(null);
-      return toastRef.current.error('Could not verify stock — please try again');
-    }
-
-    if (freshProduct.quantity < 1) {
-      setQuickSellId(null);
-      return toastRef.current.error('Out of stock!');
-    }
+    const newQty = (p.quantity || 0) - 1;
 
     const { error: stockErr } = await supabase
       .from('products')
-      .update({ quantity: freshProduct.quantity - 1 })
+      .update({ quantity: newQty })
       .eq('id', p.id);
 
     if (stockErr) {
@@ -230,24 +224,24 @@ export default function InventoryPage() {
     const { error: saleErr } = await supabase.from('sales').insert({
       shop_id:       shopId,
       product_id:    p.id,
-      product_name:  freshProduct.name,
+      product_name:  p.name,
       customer_name: 'Walk-in',
       quantity:      1,
-      unit_price:    freshProduct.sell_price,
-      buy_price:     freshProduct.buy_price,
-      total_amount:  freshProduct.sell_price,
-      profit:        freshProduct.sell_price - freshProduct.buy_price,
+      unit_price:    p.sell_price,
+      buy_price:     p.buy_price,
     });
 
     if (saleErr) {
+      setQuickSellId(null);
       toastRef.current.warning('Stock updated but sale record failed');
     } else {
-      toastRef.current.success(`Sold: ${freshProduct.name} — ${fmtKES(freshProduct.sell_price)}`);
+      toastRef.current.success(`Sold: ${p.name} — ${fmtKES(p.sell_price)}`);
     }
     setQuickSellId(null);
     fetchProducts();
   };
 
+  // ---- Restock ----
   const handleRestock = async (p, amount) => {
     if (!amount || amount < 1) return;
     const { error } = await supabase
@@ -321,6 +315,7 @@ export default function InventoryPage() {
           </div>
 
           <div className="inv-form">
+            {/* Name */}
             <div className="form-group">
               <label className="form-label">Product name *</label>
               <input
@@ -333,56 +328,90 @@ export default function InventoryPage() {
               />
             </div>
 
+            {/* Category */}
             <div className="form-group">
               <label className="form-label">Category</label>
               {!form.useCustom ? (
                 <div className="inv-cat-select-wrap">
-                  <select name="category" className="form-select"
-                    value={form.category} onChange={handleChange}>
+                  <select
+                    name="category"
+                    className="form-select"
+                    value={form.category}
+                    onChange={handleChange}
+                  >
                     {PRESET_CATEGORIES.map(c => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
-                  <button type="button" className="btn btn-ghost btn-sm"
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
                     style={{ whiteSpace: 'nowrap' }}
-                    onClick={() => setForm(f => ({ ...f, useCustom: true, customCategory: '' }))}>
+                    onClick={() => setForm(f => ({ ...f, useCustom: true, customCategory: '' }))}
+                  >
                     + Custom
                   </button>
                 </div>
               ) : (
                 <div className="inv-cat-select-wrap">
-                  <input name="customCategory" className="form-input"
+                  <input
+                    name="customCategory"
+                    className="form-input"
                     placeholder="Type a new category name"
                     value={form.customCategory}
                     onChange={handleChange}
                     autoFocus
                   />
-                  <button type="button" className="btn btn-ghost btn-sm"
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
                     style={{ whiteSpace: 'nowrap' }}
-                    onClick={() => setForm(f => ({ ...f, useCustom: false, customCategory: '' }))}>
+                    onClick={() => setForm(f => ({
+                      ...f, useCustom: false, customCategory: ''
+                    }))}
+                  >
                     Use preset
                   </button>
                 </div>
               )}
+              <span className="form-hint">
+                {form.useCustom
+                  ? 'Enter any category name. It will be saved and appear as a filter.'
+                  : 'Select a category or tap "+ Custom" to add your own.'}
+              </span>
             </div>
 
+            {/* Buy / Sell price */}
             <div className="grid-2">
               {isAdmin && (
                 <div className="form-group">
                   <label className="form-label">Buy price (KSh) *</label>
-                  <input name="buy_price" type="number" min="0" className="form-input"
+                  <input
+                    name="buy_price"
+                    type="number"
+                    min="0"
+                    className="form-input"
                     placeholder="What you paid"
-                    value={form.buy_price} onChange={handleChange} />
+                    value={form.buy_price}
+                    onChange={handleChange}
+                  />
                 </div>
               )}
               <div className="form-group">
                 <label className="form-label">Sell price (KSh) *</label>
-                <input name="sell_price" type="number" min="0" className="form-input"
+                <input
+                  name="sell_price"
+                  type="number"
+                  min="0"
+                  className="form-input"
                   placeholder="What you charge"
-                  value={form.sell_price} onChange={handleChange} />
+                  value={form.sell_price}
+                  onChange={handleChange}
+                />
               </div>
             </div>
 
+            {/* Live margin preview */}
             {isAdmin && form.buy_price && form.sell_price && (
               +form.sell_price > +form.buy_price ? (
                 <div className="inv-margin-hint">
@@ -407,24 +436,44 @@ export default function InventoryPage() {
               ) : null
             )}
 
+            {/* Quantity / Alert */}
             <div className="grid-2">
               <div className="form-group">
                 <label className="form-label">Quantity in stock *</label>
-                <input name="quantity" type="number" min="0" className="form-input"
+                <input
+                  name="quantity"
+                  type="number"
+                  min="0"
+                  className="form-input"
                   placeholder="How many units?"
-                  value={form.quantity} onChange={handleChange} />
+                  value={form.quantity}
+                  onChange={handleChange}
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Low stock alert at</label>
-                <input name="alert_qty" type="number" min="0" className="form-input"
+                <input
+                  name="alert_qty"
+                  type="number"
+                  min="0"
+                  className="form-input"
                   placeholder="5"
-                  value={form.alert_qty} onChange={handleChange} />
+                  value={form.alert_qty}
+                  onChange={handleChange}
+                />
+                <span className="form-hint">
+                  You'll be alerted when stock falls to this number or below.
+                </span>
               </div>
             </div>
 
             <div className="inv-form-actions">
               <button className="btn btn-ghost" onClick={cancelForm}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={saving}
+              >
                 {saving
                   ? <><span className="spinner" style={{ width: 14, height: 14, borderWidth: 2 }}/> Saving…</>
                   : editId ? 'Save changes' : 'Add product'
@@ -460,7 +509,8 @@ export default function InventoryPage() {
           {usedCategories.map(c => {
             const count = products.filter(p => p.category === c).length;
             return (
-              <button key={c}
+              <button
+                key={c}
                 className={`inv-chip ${catFilter === c ? 'active' : ''}`}
                 onClick={() => setCatFilter(catFilter === c ? 'all' : c)}
               >
@@ -469,6 +519,17 @@ export default function InventoryPage() {
             );
           })}
         </div>
+
+       {/*  {!showForm && (
+          <button className="btn btn-primary btn-sm" onClick={openAdd}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.5">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5"  y1="12" x2="19" y2="12"/>
+            </svg>
+            Add product
+          </button>
+        )} */}
       </div>
 
       {/* ---- PRODUCT LIST ---- */}
@@ -515,6 +576,7 @@ export default function InventoryPage() {
           </div>
         ) : (
           <>
+            {/* Mobile cards */}
             <div className="inv-mobile-list">
               {visible.map(p => (
                 <ProductCard
@@ -530,6 +592,7 @@ export default function InventoryPage() {
               ))}
             </div>
 
+            {/* Desktop table */}
             <div className="table-wrap inv-desktop-table">
               <table className="data-table">
                 <thead>
@@ -555,40 +618,48 @@ export default function InventoryPage() {
                         <td><span className="badge badge-info">{p.category || '—'}</span></td>
                         {isAdmin && <td style={{ fontSize: 12 }}>{fmtKES(p.buy_price)}</td>}
                         <td style={{ fontSize: 12 }}>{fmtKES(p.sell_price)}</td>
-                        {isAdmin && (
-                          <td>
-                            <span style={{
-                              fontSize: 12, fontWeight: 600,
-                              color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)',
-                            }}>
-                              {mg}%
-                            </span>
-                          </td>
-                        )}
+                        {isAdmin && <td>
+                          <span style={{
+                            fontSize: 12, fontWeight: 600,
+                            color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)',
+                          }}>
+                            {mg}%
+                          </span>
+                        </td>}
                         <td>
                           <div className="inv-stock-cell">
                             <span style={{ fontWeight: 600, minWidth: 24 }}>{p.quantity ?? 0}</span>
                             <div className="progress-wrap">
-                              <div className={`progress-fill progress-${status}`}
-                                style={{ width: `${pct}%` }} />
+                              <div
+                                className={`progress-fill progress-${status}`}
+                                style={{ width: `${pct}%` }}
+                              />
                             </div>
                           </div>
                         </td>
                         <td><span className={`badge badge-${status}`}>{label}</span></td>
                         <td>
                           <div className="inv-actions">
-                            <button className="btn btn-secondary btn-sm"
+                            <button
+                              className="btn btn-secondary btn-sm"
                               onClick={() => handleQuickSell(p)}
-                              disabled={(p.quantity || 0) === 0 || quickSellId === p.id}>
+                              disabled={(p.quantity || 0) === 0 || quickSellId === p.id}
+                            >
                               {quickSellId === p.id ? (
-                                <><span className="spinner spinner-sm" /> Selling…</>
-                              ) : 'Sell 1'}
+                                <>
+                                  <span className="spinner spinner-sm" /> Selling…
+                                </>
+                              ) : (
+                                'Sell 1'
+                              )}
                             </button>
                             <button className="btn btn-ghost btn-sm" onClick={() => openEdit(p)}>
                               Edit
                             </button>
-                            <button className="btn btn-danger btn-sm"
-                              onClick={() => setDeleteConfirm(p)}>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => setDeleteConfirm(p)}
+                            >
                               Delete
                             </button>
                           </div>
@@ -605,29 +676,31 @@ export default function InventoryPage() {
 
     </div>
 
-    {deleteConfirm && (
-      <div className="overlay-bg" onClick={() => setDeleteConfirm(null)}>
-        <div className="overlay-card" onClick={e => e.stopPropagation()}>
-          <div className="overlay-title">Delete product?</div>
-          <div className="overlay-body">
-            This will permanently remove <strong>{deleteConfirm.name}</strong> from
-            your inventory. This action cannot be undone.
-          </div>
-          <div className="overlay-actions">
-            <button className="btn btn-ghost" onClick={() => setDeleteConfirm(null)}>
-              Cancel
-            </button>
-            <button className="btn btn-danger" onClick={confirmDelete}>
-              Delete
-            </button>
+      {/* ---- DELETE CONFIRM MODAL (outside .fade-up for correct fixed overlay) ---- */}
+      {deleteConfirm && (
+        <div className="overlay-bg" onClick={() => setDeleteConfirm(null)}>
+          <div className="overlay-card" onClick={e => e.stopPropagation()}>
+            <div className="overlay-title">Delete product?</div>
+            <div className="overlay-body">
+              This will permanently remove <strong>{deleteConfirm.name}</strong> from
+              your inventory. This action cannot be undone.
+            </div>
+            <div className="overlay-actions">
+              <button className="btn btn-ghost" onClick={() => setDeleteConfirm(null)}>
+                Cancel
+              </button>
+              <button className="btn btn-danger" onClick={confirmDelete}>
+                Delete
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    )}
+      )}
     </>
   );
 }
 
+// ---- Mobile product card sub-component ----
 function ProductCard({ product: p, isAdmin, isQuickSelling, onEdit, onSell, onDelete, onRestock }) {
   const [showRestock, setShowRestock] = useState(false);
   const [restockAmt,  setRestockAmt]  = useState('');
@@ -652,9 +725,12 @@ function ProductCard({ product: p, isAdmin, isQuickSelling, onEdit, onSell, onDe
         </div>
       </div>
 
+      {/* Progress bar */}
       <div className="progress-wrap" style={{ width: '100%', height: 5, margin: '4px 0 10px' }}>
-        <div className={`progress-fill progress-${status}`}
-          style={{ width: `${stockPct(p.quantity || 0, p.alert_qty || 5)}%` }} />
+        <div
+          className={`progress-fill progress-${status}`}
+          style={{ width: `${stockPct(p.quantity || 0, p.alert_qty || 5)}%` }}
+        />
       </div>
 
       <div className="inv-product-prices">
@@ -670,15 +746,13 @@ function ProductCard({ product: p, isAdmin, isQuickSelling, onEdit, onSell, onDe
             </div>
             <div className="inv-price-item">
               <span className="metric-label">Profit/unit</span>
-              <span className="inv-price-val"
-                style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
+              <span className="inv-price-val" style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
                 {fmtKES((p.sell_price || 0) - (p.buy_price || 0))}
               </span>
             </div>
             <div className="inv-price-item">
               <span className="metric-label">Margin</span>
-              <span className="inv-price-val"
-                style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
+              <span className="inv-price-val" style={{ color: mg >= 20 ? 'var(--brand)' : mg > 0 ? 'var(--amber)' : 'var(--red)' }}>
                 {mg}%
               </span>
             </div>
@@ -691,42 +765,62 @@ function ProductCard({ product: p, isAdmin, isQuickSelling, onEdit, onSell, onDe
         )}
       </div>
 
+      {/* Inline restock */}
       {showRestock && (
         <div className="inv-restock-row">
-          <input type="number" min="1" className="form-input" style={{ flex: 1 }}
+          <input
+            type="number"
+            min="1"
+            className="form-input"
+            style={{ flex: 1 }}
             placeholder="Units to add"
             value={restockAmt}
             onChange={e => setRestockAmt(e.target.value)}
             autoFocus
           />
-          <button className="btn btn-secondary btn-sm"
+          <button
+            className="btn btn-secondary btn-sm"
             onClick={() => {
               if (+restockAmt > 0) {
                 onRestock(+restockAmt);
                 setShowRestock(false);
                 setRestockAmt('');
               }
-            }}>
+            }}
+          >
             Confirm
           </button>
-          <button className="btn btn-ghost btn-sm"
-            onClick={() => { setShowRestock(false); setRestockAmt(''); }}>
+          <button
+            className="btn btn-ghost btn-sm"
+            onClick={() => { setShowRestock(false); setRestockAmt(''); }}
+          >
             Cancel
           </button>
         </div>
       )}
 
       <div className="inv-product-actions">
-        <button className="btn btn-secondary btn-sm" onClick={onSell}
-          disabled={(p.quantity || 0) === 0 || isQuickSelling}>
+        <button
+          className="btn btn-secondary btn-sm"
+          onClick={onSell}
+          disabled={(p.quantity || 0) === 0 || isQuickSelling}
+        >
           {isQuickSelling ? (
-            <><span className="spinner spinner-sm" /> Selling…</>
-          ) : 'Sell 1'}
+            <>
+              <span className="spinner spinner-sm" /> Selling…
+            </>
+          ) : (
+            'Sell 1'
+          )}
         </button>
-        <button className="btn btn-ghost btn-sm"
-          onClick={() => setShowRestock(v => !v)}>
+        {/* <button
+          className="btn btn-ghost btn-sm"
+          onClick={() => setShowRestock(v => !v)}
+        >
           Restock
-        </button>
+        </button> */}
+        {/* <button className="btn btn-ghost btn-sm" onClick={onEdit}>Edit</button> */}
+        {/* <button className="btn btn-danger btn-sm" onClick={onDelete}>Delete</button> */}
       </div>
     </div>
   );
